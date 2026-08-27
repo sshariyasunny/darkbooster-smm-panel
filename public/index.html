@@ -7,7 +7,7 @@
   <meta name="description" content="Dark Booster SMM Panel Dashboard powered by bestfollows.com API v2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -24,10 +24,13 @@
   <!-- App Wrapper -->
   <div class="app-wrapper" id="app-main-wrapper">
 
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- Left Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <img src="logo.png" alt="Dark Booster" class="brand-logo-img" onerror="this.src='https://i.ibb.co.com/S445DfXM/Chat-GPT-Image-Apr-30-2026-07-38-18-PM-removebg-preview.png'">
+        <img src="/logo.png" alt="Dark Booster" class="brand-logo-img" onerror="this.src='https://i.ibb.co.com/S445DfXM/Chat-GPT-Image-Apr-30-2026-07-38-18-PM-removebg-preview.png'">
         <span class="brand-name">Dark Booster</span>
       </div>
 
@@ -620,7 +623,7 @@
     <div class="dark-card" style="width: 100%; max-width: 440px; border-color: var(--border-glow); box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
       <div id="auth-login-view" style="padding: 32px;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <img src="logo.png" alt="Dark Booster" style="width: 72px; height: 72px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 12px rgba(6,182,212,0.6));" onerror="this.src='https://i.ibb.co.com/S445DfXM/Chat-GPT-Image-Apr-30-2026-07-38-18-PM-removebg-preview.png'">
+          <img src="/logo.png" alt="Dark Booster" style="width: 72px; height: 72px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 0 12px rgba(6,182,212,0.6));" onerror="this.src='https://i.ibb.co.com/S445DfXM/Chat-GPT-Image-Apr-30-2026-07-38-18-PM-removebg-preview.png'">
           <h2 style="font-size: 22px; font-weight: 800;">Welcome to Dark Booster</h2>
           <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Sign in to your SMM Panel account</p>
         </div>
@@ -636,7 +639,7 @@
           <button type="submit" class="btn-submit-purple" style="margin-top: 24px;">Sign In</button>
         </form>
         <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px;">
-          Don't have an account? <a href="#" onclick="toggleAuthView('register')" style="color: var(--purple-primary); font-weight: 700;">Create Account</a>
+          Don't have an account? <a href="javascript:void(0)" onclick="toggleAuthView('register', event)" style="color: var(--purple-primary); font-weight: 700;">Create Account</a>
         </p>
 
       </div>
@@ -670,7 +673,7 @@
           <button type="submit" class="btn-submit-purple" style="margin-top: 24px;">Register Account</button>
         </form>
         <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px;">
-          Already have an account? <a href="#" onclick="toggleAuthView('login')" style="color: var(--purple-primary); font-weight: 700;">Sign In</a>
+          Already have an account? <a href="javascript:void(0)" onclick="toggleAuthView('login', event)" style="color: var(--purple-primary); font-weight: 700;">Sign In</a>
         </p>
       </div>
     </div>
@@ -698,6 +701,6 @@
 
   <div id="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

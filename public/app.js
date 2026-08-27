@@ -41,22 +41,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Mobile Sidebar Toggle
+  // Mobile Sidebar & Backdrop Toggle
   const toggleBtn = document.getElementById('toggle-sidebar');
+  const sidebarEl = document.getElementById('sidebar');
+  const backdropEl = document.getElementById('sidebar-backdrop');
+  
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('open');
+      sidebarEl.classList.toggle('open');
+      if (backdropEl) backdropEl.classList.toggle('active');
+    });
+  }
+  if (backdropEl) {
+    backdropEl.addEventListener('click', () => {
+      sidebarEl.classList.remove('open');
+      backdropEl.classList.remove('active');
     });
   }
 
   // Currency Toggle Button
   const currencyBtn = document.getElementById('currency-toggle-btn');
   if (currencyBtn) {
-    currencyBtn.textContent = 'BDT (৳)';
+    currencyBtn.textContent = (currentCurrency === 'BDT') ? 'BDT (৳)' : 'USD ($)';
     currencyBtn.addEventListener('click', () => {
       currentCurrency = (currentCurrency === 'BDT') ? 'USD' : 'BDT';
       currencyBtn.textContent = (currentCurrency === 'BDT') ? 'BDT (৳)' : 'USD ($)';
       updateUserBalanceDisplay();
+
+      // Refresh Category & Service dropdown options to show updated BDT/USD rates
+      const currentCat = document.getElementById('category-select').value;
+      const currentSrvId = document.getElementById('service-select').value;
+      filterCategoriesAndServices();
+      if (currentCat && categoriesData[currentCat]) {
+        document.getElementById('category-select').value = currentCat;
+        populateServicesDropdown(currentCat);
+        if (currentSrvId) {
+          document.getElementById('service-select').value = currentSrvId;
+          onServiceSelect(currentSrvId);
+        }
+      }
+
       if (selectedServiceObj) {
         updateServiceDetailsDisplay(selectedServiceObj);
         calculateTotalCharge();
@@ -126,7 +150,8 @@ function showAuthOverlay(show) {
 }
 
 // Toggle Login / Register
-window.toggleAuthView = function(view) {
+window.toggleAuthView = function(view, e) {
+  if (e && e.preventDefault) e.preventDefault();
   const loginView = document.getElementById('auth-login-view');
   const regView = document.getElementById('auth-register-view');
   if (view === 'register') {
@@ -342,7 +367,10 @@ window.switchToTab = function(tabId) {
     fetchAdminRecycleBinUsers();
   }
 
-  document.getElementById('sidebar').classList.remove('open');
+  const sidebarEl = document.getElementById('sidebar');
+  const backdropEl = document.getElementById('sidebar-backdrop');
+  if (sidebarEl) sidebarEl.classList.remove('open');
+  if (backdropEl) backdropEl.classList.remove('active');
 };
 
 // Fetch Services Catalog
@@ -435,8 +463,14 @@ function onServiceSelect(serviceId) {
 
   const qtyInput = document.getElementById('input-quantity');
   if (qtyInput) {
-    qtyInput.value = '0';
-    document.getElementById('quantity-range-hint').textContent = `Min ${parseInt(selectedServiceObj.min).toLocaleString()} - Max ${parseInt(selectedServiceObj.max).toLocaleString()}`;
+    const minQty = parseInt(selectedServiceObj.min) || 1000;
+    const maxQty = parseInt(selectedServiceObj.max) || 10000;
+    const currentVal = parseInt(qtyInput.value) || 0;
+
+    if (currentVal <= 0 || currentVal < minQty) {
+      qtyInput.value = minQty;
+    }
+    document.getElementById('quantity-range-hint').textContent = `Min ${minQty.toLocaleString()} - Max ${maxQty.toLocaleString()}`;
   }
 
   const commentsGroup = document.getElementById('field-comments-group');
@@ -1147,3 +1181,89 @@ function initThemeSwitcher() {
     }
   }
 }
+
+// ----------------------------------------------------
+// MASS ORDER HANDLER
+// ----------------------------------------------------
+window.handleMassOrderSubmit = async function() {
+  if (!currentUser) {
+    showToast('Please log in to submit mass orders', 'error');
+    showAuthOverlay(true);
+    return;
+  }
+
+  const massInput = document.getElementById('mass-order-input');
+  if (!massInput) return;
+  const massData = massInput.value.trim();
+
+  if (!massData) {
+    showToast('Please enter mass order data', 'error');
+    return;
+  }
+
+  try {
+    showToast('Processing mass orders...', 'info');
+    const res = await fetch('/api/mass-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: currentUser.id,
+        massData: massData
+      })
+    });
+    const data = await res.json();
+
+    if (data.success && data.results) {
+      let successCount = 0;
+      let failCount = 0;
+      data.results.forEach(r => {
+        if (r.status === 'Success') successCount++;
+        else failCount++;
+      });
+
+      if (successCount > 0) {
+        showToast(`Mass Orders Placed! ${successCount} Successful, ${failCount} Failed`, 'success');
+        massInput.value = '';
+        fetchLatestUserData();
+        fetchOrdersHistory();
+        if (currentUser.role === 'admin') fetchAdminAllOrders();
+      } else {
+        showToast(`Mass Order Failed! ${failCount} errors found. Check format (service_id | link | quantity)`, 'error');
+      }
+    } else {
+      showToast(data.error || 'Mass order submission failed', 'error');
+    }
+  } catch (err) {
+    showToast('Server error while submitting mass orders', 'error');
+  }
+};
+
+// ----------------------------------------------------
+// REALTIME AUTO-REFRESH POLLING (10 SECONDS INTERVAL)
+// ----------------------------------------------------
+setInterval(() => {
+  if (currentUser) {
+    if (currentUser.role === 'admin') {
+      fetchAdminUsers();
+      fetchAdminDeposits();
+      fetchAdminProviderData();
+      fetchAdminAllOrders();
+      fetchAdminRecycleBinUsers();
+    } else {
+      fetchLatestUserData();
+    }
+  }
+}, 10000);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && currentUser) {
+    if (currentUser.role === 'admin') {
+      fetchAdminUsers();
+      fetchAdminDeposits();
+      fetchAdminProviderData();
+    } else {
+      fetchLatestUserData();
+    }
+  }
+});
+

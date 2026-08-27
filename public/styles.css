@@ -1223,33 +1223,42 @@ body {
   border: 1px solid #ddd6fe;
 }
 
-/* MOBILE & TABLET RESPONSIVE OVERRIDES (PIXEL PERFECT TO REFERENCE SCREENSHOTS) */
+/* MOBILE SIDEBAR BACKDROP OVERLAY */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-backdrop.active {
+  display: block;
+  opacity: 1;
+}
+
+/* MOBILE & TABLET RESPONSIVE OVERRIDES (PIXEL PERFECT & ULTRA-SMOOTH) */
 @media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -270px;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
   .dashboard-container {
     padding: 12px;
-  }
-
-  .ai-support-banner {
-    padding: 12px 14px;
-  }
-
-  .ai-bot-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
-  }
-
-  .ai-banner-title {
-    font-size: 13px;
-  }
-
-  .ai-banner-sub {
-    font-size: 11px;
-  }
-
-  .ai-chat-btn {
-    padding: 6px 14px;
-    font-size: 11px;
   }
 
   .stat-cards-grid {
@@ -1263,23 +1272,41 @@ body {
   }
 
   .stat-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
   }
 
+  /* Smooth Horizontally Scrollable Platform Pills Bar for Mobile */
   .platform-pills-row {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 4px 2px 10px 2px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    grid-template-columns: none !important;
+  }
+
+  .platform-pills-row::-webkit-scrollbar {
+    display: none;
   }
 
   .platform-pill {
-    padding: 8px 2px;
-    border-radius: 10px;
+    flex: 0 0 auto;
+    padding: 8px 14px !important;
+    border-radius: 20px !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
   }
 
   .platform-pill-text {
-    display: none;
+    display: inline-block !important;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   .split-workspace {
@@ -1295,5 +1322,22 @@ body {
     padding: 6px 14px;
     font-size: 12px;
   }
+
+  /* Prevent iOS input zoom glitch */
+  .input-box, .select-box {
+    font-size: 16px !important;
+  }
+
+  /* Mobile Touch Scroll for Tables */
+  .data-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table th, .data-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
 }
+
 

@@ -96,13 +96,21 @@ function saveOrders(orders) {
 
 // SMM Provider API Connector (bestfollows.com/api/v2)
 async function callSmmApi(payload) {
-  const params = new URLSearchParams({ key: API_KEY, ...payload });
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params
-  });
-  return await response.json();
+  try {
+    const params = new URLSearchParams({ key: API_KEY, ...payload });
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params
+    });
+    if (!response.ok) {
+      return { error: `Provider API HTTP error status: ${response.status}` };
+    }
+    return await response.json();
+  } catch (err) {
+    console.error('callSmmApi error:', err.message);
+    return { error: 'Failed to connect to SMM API provider' };
+  }
 }
 
 // Sync Admin user balance with live SMM Provider balance
@@ -263,14 +271,14 @@ app.get('/api/deposit/my-history/:userId', (req, res) => {
 app.get('/api/admin/users', async (req, res) => {
   await syncAdminLiveBalance();
   const users = getUsers();
-  const activeUsers = users.filter(u => !u.is_deleted).map(({ password, ...u }) => u);
+  const activeUsers = users.filter(u => u.is_deleted !== true).map(({ password, ...u }) => u);
   res.json(activeUsers);
 });
 
 // Admin: Get Recycle Bin Users
 app.get('/api/admin/recycle-bin', (req, res) => {
   const users = getUsers();
-  const trashUsers = users.filter(u => u.is_deleted).map(({ password, ...u }) => u);
+  const trashUsers = users.filter(u => u.is_deleted === true).map(({ password, ...u }) => u);
   res.json(trashUsers);
 });
 
@@ -541,6 +549,109 @@ app.post('/api/order', async (req, res) => {
   }
 });
 
+// Mass Order Batch Placement
+app.post('/api/mass-order', async (req, res) => {
+  try {
+    const { userId, massData } = req.body;
+    if (!userId) {
+      return res.status(401).json({ error: 'Please log in to place orders' });
+    }
+    if (!massData || !massData.trim()) {
+      return res.status(400).json({ error: 'Mass order data is required' });
+    }
+
+    const users = getUsers();
+    const userIndex = users.findIndex(u => u.id === userId && !u.is_deleted);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User account not found' });
+    }
+
+    // Fetch services to calculate rates
+    let services = [];
+    try {
+      const rawServices = await callSmmApi({ action: 'services' });
+      if (Array.isArray(rawServices)) {
+        services = rawServices;
+      }
+    } catch (e) {}
+
+    const lines = massData.trim().split('\n');
+    const results = [];
+
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      const parts = line.split('|').map(p => p.trim());
+      if (parts.length < 3) {
+        results.push({ line, status: 'Error', message: 'Invalid format. Use service_id | link | quantity' });
+        continue;
+      }
+
+      const serviceId = parts[0];
+      const link = parts[1];
+      const quantity = parseInt(parts[2]);
+
+      if (!serviceId || !link || isNaN(quantity) || quantity <= 0) {
+        results.push({ line, status: 'Error', message: 'Invalid parameters' });
+        continue;
+      }
+
+      const srv = services.find(s => String(s.service) === String(serviceId));
+      const originalRate = srv ? parseFloat(srv.rate) || 0 : 0;
+      const rate = originalRate * PROFIT_MARGIN_MULTIPLIER;
+      const orderCharge = (rate / 1000) * quantity;
+
+      if (users[userIndex].role !== 'admin' && users[userIndex].balance < orderCharge) {
+        results.push({ line, status: 'Error', message: `Insufficient balance (Need: $${orderCharge.toFixed(4)})` });
+        continue;
+      }
+
+      try {
+        const smmRes = await callSmmApi({ action: 'add', service: serviceId, link: link, quantity: quantity });
+        if (smmRes && (smmRes.order || smmRes.orders)) {
+          const providerOrderId = smmRes.order || (Array.isArray(smmRes.orders) ? smmRes.orders[0] : smmRes.orders);
+
+          if (users[userIndex].role !== 'admin') {
+            users[userIndex].balance -= orderCharge;
+          }
+          users[userIndex].spending += orderCharge;
+
+          const newOrderRecord = {
+            id: providerOrderId,
+            user_id: users[userIndex].id,
+            username: users[userIndex].username,
+            service_id: serviceId,
+            service_name: srv ? srv.name : `Service #${serviceId}`,
+            link: link,
+            quantity: quantity,
+            charge: orderCharge.toFixed(4),
+            status: 'Pending',
+            remains: quantity,
+            date: new Date().toLocaleString()
+          };
+
+          const orders = getOrders();
+          orders.unshift(newOrderRecord);
+          saveOrders(orders);
+
+          results.push({ line, status: 'Success', orderId: providerOrderId, charge: orderCharge.toFixed(4) });
+        } else {
+          results.push({ line, status: 'Error', message: smmRes.error || 'Provider rejected order' });
+        }
+      } catch (err) {
+        results.push({ line, status: 'Error', message: err.message });
+      }
+    }
+
+    saveUsers(users);
+    await syncAdminLiveBalance();
+
+    res.json({ success: true, results, user_balance: users[userIndex].balance });
+  } catch (error) {
+    res.status(500).json({ error: 'Mass order processing failed', details: error.message });
+  }
+});
+
 // Order Status Check
 app.post('/api/status', async (req, res) => {
   try {
@@ -561,6 +672,14 @@ app.get('/api/my-orders/:userId', (req, res) => {
   const orders = getOrders();
   const userOrders = orders.filter(o => o.user_id === req.params.userId || req.params.userId === 'usr_admin');
   res.json(userOrders);
+});
+
+// Filter missing static assets so they return 404 instead of serving index.html
+app.use((req, res, next) => {
+  if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|json|woff|woff2|ttf|eot)$/i)) {
+    return res.status(404).send('Static asset not found');
+  }
+  next();
 });
 
 // SPA FALLBACK ROUTE
