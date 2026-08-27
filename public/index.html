@@ -117,6 +117,18 @@
       <!-- Dashboard Main Container -->
       <main class="dashboard-container">
 
+        <!-- AI Support Banner Card -->
+        <div class="ai-support-banner">
+          <div class="ai-banner-left">
+            <div class="ai-bot-icon">🤖</div>
+            <div>
+              <div class="ai-banner-title">AI Support is Live!</div>
+              <div class="ai-banner-sub">24/7 Fast Customer Service</div>
+            </div>
+          </div>
+          <button class="ai-chat-btn" onclick="switchToTab('tab-add-funds')">Chat Now</button>
+        </div>
+
         <!-- Top Stat Cards (Shown for Users) -->
         <div class="stat-cards-grid" id="user-top-stat-grid">
           <div class="stat-card stat-card-user">
@@ -162,41 +174,41 @@
 
         <!-- Platform Filter Pills Row (Shown for Users) -->
         <div class="platform-pills-row" id="user-platform-pills-row">
-          <button class="platform-pill active" data-platform="ALL">
-            <span class="platform-icon-badge all-badge"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Everything
+          <button class="platform-pill active" data-platform="ALL" title="Everything">
+            <span class="platform-icon-badge all-badge"><i class="fa-solid fa-wand-magic-sparkles"></i></span> <span class="platform-pill-text">Everything</span>
           </button>
-          <button class="platform-pill" data-platform="Instagram">
-            <span class="platform-icon-badge instagram-badge"><i class="fa-brands fa-instagram"></i></span> Instagram
+          <button class="platform-pill" data-platform="Instagram" title="Instagram">
+            <span class="platform-icon-badge instagram-badge"><i class="fa-brands fa-instagram"></i></span> <span class="platform-pill-text">Instagram</span>
           </button>
-          <button class="platform-pill" data-platform="Facebook">
-            <span class="platform-icon-badge facebook-badge"><i class="fa-brands fa-facebook-f"></i></span> Facebook
+          <button class="platform-pill" data-platform="Facebook" title="Facebook">
+            <span class="platform-icon-badge facebook-badge"><i class="fa-brands fa-facebook-f"></i></span> <span class="platform-pill-text">Facebook</span>
           </button>
-          <button class="platform-pill" data-platform="YouTube">
-            <span class="platform-icon-badge youtube-badge"><i class="fa-brands fa-youtube"></i></span> YouTube
+          <button class="platform-pill" data-platform="YouTube" title="YouTube">
+            <span class="platform-icon-badge youtube-badge"><i class="fa-brands fa-youtube"></i></span> <span class="platform-pill-text">YouTube</span>
           </button>
-          <button class="platform-pill" data-platform="TikTok">
-            <span class="platform-icon-badge tiktok-badge"><i class="fa-brands fa-tiktok"></i></span> TikTok
+          <button class="platform-pill" data-platform="TikTok" title="TikTok">
+            <span class="platform-icon-badge tiktok-badge"><i class="fa-brands fa-tiktok"></i></span> <span class="platform-pill-text">TikTok</span>
           </button>
-          <button class="platform-pill" data-platform="Telegram">
-            <span class="platform-icon-badge telegram-badge"><i class="fa-brands fa-telegram"></i></span> Telegram
+          <button class="platform-pill" data-platform="Telegram" title="Telegram">
+            <span class="platform-icon-badge telegram-badge"><i class="fa-brands fa-telegram"></i></span> <span class="platform-pill-text">Telegram</span>
           </button>
-          <button class="platform-pill" data-platform="Twitter">
-            <span class="platform-icon-badge twitter-badge"><i class="fa-brands fa-x-twitter"></i></span> Twitter / X
+          <button class="platform-pill" data-platform="Twitter" title="Twitter">
+            <span class="platform-icon-badge twitter-badge"><i class="fa-brands fa-x-twitter"></i></span> <span class="platform-pill-text">Twitter</span>
           </button>
-          <button class="platform-pill" data-platform="Spotify">
-            <span class="platform-icon-badge spotify-badge"><i class="fa-brands fa-spotify"></i></span> Spotify
+          <button class="platform-pill" data-platform="Spotify" title="Spotify">
+            <span class="platform-icon-badge spotify-badge"><i class="fa-brands fa-spotify"></i></span> <span class="platform-pill-text">Spotify</span>
           </button>
-          <button class="platform-pill" data-platform="LinkedIn">
-            <span class="platform-icon-badge linkedin-badge"><i class="fa-brands fa-linkedin-in"></i></span> LinkedIn
+          <button class="platform-pill" data-platform="LinkedIn" title="LinkedIn">
+            <span class="platform-icon-badge linkedin-badge"><i class="fa-brands fa-linkedin-in"></i></span> <span class="platform-pill-text">LinkedIn</span>
           </button>
-          <button class="platform-pill" data-platform="SoundCloud">
-            <span class="platform-icon-badge soundcloud-badge"><i class="fa-brands fa-soundcloud"></i></span> SoundCloud
+          <button class="platform-pill" data-platform="SoundCloud" title="SoundCloud">
+            <span class="platform-icon-badge soundcloud-badge"><i class="fa-brands fa-soundcloud"></i></span> <span class="platform-pill-text">SoundCloud</span>
           </button>
-          <button class="platform-pill" data-platform="Web Traffic">
-            <span class="platform-icon-badge traffic-badge"><i class="fa-solid fa-globe"></i></span> Web Traffic
+          <button class="platform-pill" data-platform="Web Traffic" title="Web Traffic">
+            <span class="platform-icon-badge traffic-badge"><i class="fa-solid fa-globe"></i></span> <span class="platform-pill-text">Web Traffic</span>
           </button>
-          <button class="platform-pill" data-platform="Snapchat">
-            <span class="platform-icon-badge snapchat-badge"><i class="fa-brands fa-snapchat"></i></span> Snapchat
+          <button class="platform-pill" data-platform="Snapchat" title="Snapchat">
+            <span class="platform-icon-badge snapchat-badge"><i class="fa-brands fa-snapchat"></i></span> <span class="platform-pill-text">Snapchat</span>
           </button>
         </div>
 
@@ -206,9 +218,11 @@
         <section id="tab-new-order" class="tab-pane active">
           <div class="split-workspace">
             <div class="dark-card">
-              <div class="card-top-bar">
-                <div class="card-title"><i data-lucide="shopping-cart" style="color: var(--purple-primary);"></i> New Order</div>
-                <a class="badge-btn" onclick="switchToTab('tab-add-funds')">Add funds</a>
+              <div class="card-top-bar purple-header-bar">
+                <div class="header-pill-tabs">
+                  <button class="header-tab-btn active" onclick="switchToTab('tab-new-order')"><i class="fa-solid fa-cart-shopping"></i> New Order</button>
+                  <button class="header-tab-btn" onclick="switchToTab('tab-add-funds')"><i class="fa-solid fa-wallet"></i> Addfunds</button>
+                </div>
               </div>
               <div class="card-body">
                 <form id="order-form">
@@ -249,14 +263,14 @@
             </div>
 
             <div class="dark-card">
-              <div class="card-top-bar">
-                <div class="card-title" id="detail-card-title" style="font-size: 14px; font-weight: 700;">Select a Service to View Details</div>
+              <div class="card-top-bar purple-header-bar">
+                <div class="card-title-purple" id="detail-card-title">Select a Service to View Details</div>
               </div>
               <div class="card-body">
                 <div class="example-link-box" id="example-link-box">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
-                    <span id="example-link-text">https://www.example.com/xxxx/</span>
+                  <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                    <i data-lucide="link" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                    <span id="example-link-text" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://www.example.com/xxxx/</span>
                   </div>
                   <button class="copy-icon-btn" onclick="copyText('example-link-text')" title="Copy Link"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>
                 </div>
