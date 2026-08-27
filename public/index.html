@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BestFollows SMM Panel Dashboard</title>
+  <meta name="description" content="BestFollows SMM Panel Dashboard powered by bestfollows.com API v2">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- TOP SCROLLING TICKER NOTICE BAR -->
+  <div class="top-notice-bar">
+    <div class="ticker-track">
+      <div class="ticker-content">
+        📢 BestFollows SMM প্যানেলে স্বাগতম! 💎 ১ ডলার (1 USD) = ৳127 BDT। 🕊️ বিকাশ পারসোনাল: 01909548699 | 💰 নগদ পারসোনাল: 01909548699 | 💴 রকেট পারসোনাল: 019095486999 | 🌐 Binance UID: 1124018106 🚀 কম মূল্যে ও দ্রুত সোশ্যাল মিডিয়া গ্রোথ সার্ভিস অর্ডার করুন!
+      </div>
+    </div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-wrapper" id="app-main-wrapper">
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">B</div>
+        <span class="brand-name">BestFollows</span>
+      </div>
+
+      <!-- User Profile Box -->
+      <div class="user-profile-card">
+        <div class="user-avatar-info">
+          <div class="user-avatar" id="sidebar-user-avatar">U</div>
+          <span class="user-name-text" id="sidebar-user-name">Guest</span>
+        </div>
+        <button class="logout-icon-btn" id="logout-btn" title="Logout">
+          <i data-lucide="power" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Links for NORMAL USER -->
+      <nav class="sidebar-nav" id="user-sidebar-nav">
+        <a class="nav-link active" data-tab="tab-new-order">
+          <i data-lucide="shopping-cart"></i> New Order
+        </a>
+        <a class="nav-link" data-tab="tab-mass-order">
+          <i data-lucide="layers"></i> Mass Order
+        </a>
+        <a class="nav-link" data-tab="tab-orders">
+          <i data-lucide="file-text"></i> Orders History
+        </a>
+        <a class="nav-link" data-tab="tab-services">
+          <i data-lucide="list"></i> Services Catalog
+        </a>
+        <a class="nav-link" data-tab="tab-add-funds">
+          <i data-lucide="credit-card"></i> Add Funds
+        </a>
+        <a class="nav-link" data-tab="tab-dashboard">
+          <i data-lucide="bar-chart-2"></i> Dashboard
+        </a>
+      </nav>
+
+      <!-- Navigation Links for ADMIN ONLY -->
+      <nav class="sidebar-nav" id="admin-sidebar-nav" style="display: none;">
+        <a class="nav-link active" data-tab="tab-admin-overview">
+          <i data-lucide="bar-chart-2"></i> Admin Overview
+        </a>
+        <a class="nav-link" data-tab="tab-admin-users">
+          <i data-lucide="users"></i> User Management
+        </a>
+        <a class="nav-link" data-tab="tab-admin-recycle-bin" style="color: #f87171;">
+          <i data-lucide="trash-2"></i> Recycle Bin (রিসাইকেল বিন)
+        </a>
+        <a class="nav-link" data-tab="tab-admin-deposits">
+          <i data-lucide="credit-card"></i> Deposit Requests
+        </a>
+        <a class="nav-link" data-tab="tab-admin-orders">
+          <i data-lucide="shopping-bag"></i> All Users Orders
+        </a>
+        <a class="nav-link" data-tab="tab-services">
+          <i data-lucide="list"></i> Services List
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Body -->
+    <div class="main-wrapper">
+
+      <!-- Top Header Navbar -->
+      <header class="top-header">
+        <button class="toggle-sidebar-btn" id="toggle-sidebar">
+          <i data-lucide="menu"></i>
+        </button>
+
+        <div class="header-utilities">
+          <button class="util-icon-btn" title="Notifications">
+            <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+          </button>
+
+          <!-- Default BDT / USD Currency Converter Toggle -->
+          <button class="util-icon-btn" id="currency-toggle-btn" title="Toggle Currency (BDT / USD)" style="width: auto; padding: 0 12px; border-radius: 20px; font-weight: 700; font-size: 12px; color: var(--purple-primary);">
+            BDT (৳)
+          </button>
+
+          <div class="user-avatar" id="header-user-avatar" style="cursor: pointer; width: 34px; height: 34px;">U</div>
+        </div>
+      </header>
+
+      <!-- Dashboard Main Container -->
+      <main class="dashboard-container">
+
+        <!-- Top Stat Cards (Shown for Users) -->
+        <div class="stat-cards-grid" id="user-top-stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper"><i data-lucide="user"></i></div>
+            <div class="stat-info">
+              <span class="stat-title">Username</span>
+              <span class="stat-value" id="card-username">Guest</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.12); color: var(--success);"><i data-lucide="wallet"></i></div>
+            <div class="stat-info">
+              <span class="stat-title">My Balance</span>
+              <span class="stat-value" id="card-balance" style="color: var(--success);">৳0.00 BDT</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><i data-lucide="dollar-sign"></i></div>
+            <div class="stat-info">
+              <span class="stat-title">Spending</span>
+              <span class="stat-value" id="card-spending">৳0.00 BDT</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.12); color: var(--cyan-accent);"><i data-lucide="shopping-bag"></i></div>
+            <div class="stat-info">
+              <span class="stat-title">Total Orders</span>
+              <span class="stat-value" id="card-total-orders">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform Filter Pills Row (Shown for Users) -->
+        <div class="platform-pills-row" id="user-platform-pills-row">
+          <button class="platform-pill active" data-platform="ALL">🏠 Everything</button>
+          <button class="platform-pill" data-platform="Instagram">📸 Instagram</button>
+          <button class="platform-pill" data-platform="Facebook">👍 Facebook</button>
+          <button class="platform-pill" data-platform="YouTube">▶️ YouTube</button>
+          <button class="platform-pill" data-platform="Twitter">🐦 Twitter</button>
+          <button class="platform-pill" data-platform="Spotify">🎵 Spotify</button>
+          <button class="platform-pill" data-platform="TikTok">🎵 TikTok</button>
+          <button class="platform-pill" data-platform="LinkedIn">💼 LinkedIn</button>
+          <button class="platform-pill" data-platform="SoundCloud">☁️ SoundCloud</button>
+          <button class="platform-pill" data-platform="Telegram">✈️ Telegram</button>
+          <button class="platform-pill" data-platform="Web Traffic">🌐 Web Traffic</button>
+          <button class="platform-pill" data-platform="Snapchat">👻 Snapchat</button>
+        </div>
+
+        <!-- ================= USER TABS ================= -->
+
+        <!-- TAB 1: New Order -->
+        <section id="tab-new-order" class="tab-pane active">
+          <div class="split-workspace">
+            <div class="dark-card">
+              <div class="card-top-bar">
+                <div class="card-title"><i data-lucide="shopping-cart" style="color: var(--purple-primary);"></i> New Order</div>
+                <a class="badge-btn" onclick="switchToTab('tab-add-funds')">Add funds</a>
+              </div>
+              <div class="card-body">
+                <form id="order-form">
+                  <div class="field-group">
+                    <div class="search-field-wrapper">
+                      <i data-lucide="search" class="search-field-icon" style="width: 16px; height: 16px;"></i>
+                      <input type="text" id="search-input-field" class="input-box" placeholder="Search service or category...">
+                    </div>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="category-select">Category</label>
+                    <select id="category-select" class="select-box"><option value="">Loading categories...</option></select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label" for="service-select">Service</label>
+                    <select id="service-select" class="select-box" disabled><option value="">Select a Category first</option></select>
+                  </div>
+                  <div class="field-group" id="field-link-group">
+                    <label class="field-label" for="input-link">Link</label>
+                    <input type="text" id="input-link" class="input-box" placeholder="https://..." required>
+                  </div>
+                  <div class="field-group" id="field-comments-group" style="display: none;">
+                    <label class="field-label" for="input-comments">Comments (1 per line)</label>
+                    <textarea id="input-comments" class="input-box" style="min-height: 100px; resize: vertical;"></textarea>
+                  </div>
+                  <div class="field-group" id="field-quantity-group">
+                    <label class="field-label" for="input-quantity">Quantity</label>
+                    <input type="number" id="input-quantity" class="input-box" placeholder="1000">
+                    <div class="input-range-hint" id="quantity-range-hint">Min 1,000 - Max 1,000</div>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Charge</label>
+                    <input type="text" id="input-charge-display" class="input-box" value="৳0.00 BDT" readonly style="font-weight: 700; color: var(--purple-primary); font-family: 'JetBrains Mono', monospace;">
+                  </div>
+                  <button type="submit" class="btn-submit-purple" id="btn-order-submit">Submit</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="dark-card">
+              <div class="card-top-bar">
+                <div class="card-title" id="detail-card-title" style="font-size: 14px; font-weight: 700;">Select a Service to View Details</div>
+              </div>
+              <div class="card-body">
+                <div class="example-link-box" id="example-link-box">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                    <span id="example-link-text">https://www.example.com/xxxx/</span>
+                  </div>
+                  <button class="copy-icon-btn" onclick="copyText('example-link-text')" title="Copy Link"><i data-lucide="copy" style="width: 14px; height: 14px;"></i></button>
+                </div>
+
+                <div class="spec-badges-grid">
+                  <div class="spec-badge-item">
+                    <div class="spec-icon blue"><i data-lucide="clock" style="width: 18px; height: 18px;"></i></div>
+                    <div><div class="spec-text-title">Start Time</div><div class="spec-text-value" id="spec-start-time">12 - 24 Hours</div></div>
+                  </div>
+                  <div class="spec-badge-item">
+                    <div class="spec-icon purple"><i data-lucide="zap" style="width: 18px; height: 18px;"></i></div>
+                    <div><div class="spec-text-title">Speed</div><div class="spec-text-value" id="spec-speed">1k/Day</div></div>
+                  </div>
+                  <div class="spec-badge-item">
+                    <div class="spec-icon cyan"><i data-lucide="shield-check" style="width: 18px; height: 18px;"></i></div>
+                    <div><div class="spec-text-title">Guarantee</div><div class="spec-text-value" id="spec-guarantee">30 Days Refill</div></div>
+                  </div>
+                  <div class="spec-badge-item">
+                    <div class="spec-icon warning"><i data-lucide="star" style="width: 18px; height: 18px;"></i></div>
+                    <div><div class="spec-text-title">Quality</div><div class="spec-text-value" id="spec-quality">Real Quality</div></div>
+                  </div>
+                </div>
+
+                <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Description</div>
+                <div class="description-container" id="detail-description-box">
+                  Select a service from the left list to see detailed specifications.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: Mass Order -->
+        <section id="tab-mass-order" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar"><div class="card-title"><i data-lucide="layers" style="color: var(--purple-primary);"></i> Mass Order</div></div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">One order per line in format: <code>service_id | link | quantity</code></p>
+              <textarea id="mass-order-input" class="input-box" style="min-height: 200px; font-family: 'JetBrains Mono', monospace;" placeholder="102 | https://www.facebook.com/xxx | 1000"></textarea>
+              <button class="btn-submit-purple" style="margin-top: 16px;" onclick="handleMassOrderSubmit()">Submit Mass Orders</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: User Orders History -->
+        <section id="tab-orders" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar">
+              <div class="card-title"><i data-lucide="file-text" style="color: var(--purple-primary);"></i> Orders History</div>
+              <button class="badge-btn" onclick="fetchOrdersHistory()">Refresh Orders</button>
+            </div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>ID</th><th>Service</th><th>Link</th><th>Qty</th><th>Charge</th><th>Status</th><th>Date</th><th>Action</th></tr>
+                  </thead>
+                  <tbody id="orders-table-body">
+                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No order history found</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: Services Catalog -->
+        <section id="tab-services" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar">
+              <div class="card-title"><i data-lucide="list" style="color: var(--purple-primary);"></i> Services Catalog</div>
+            </div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>ID</th><th>Category</th><th>Service Name</th><th>Rate / 1k</th><th>Min / Max</th><th>Action</th></tr>
+                  </thead>
+                  <tbody id="services-table-body">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading services...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: Add Funds & Deposits -->
+        <section id="tab-add-funds" class="tab-pane">
+          <div class="dark-card" style="margin-bottom: 24px;">
+            <div class="card-top-bar"><div class="card-title"><i data-lucide="credit-card" style="color: var(--purple-primary);"></i> Add Funds (ডিপোজিট করুন)</div></div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                  <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--purple-primary);">✅ পেমেন্ট করার জন্য নম্বরসমূহ (কপি করতে বাটনে ক্লিক করুন)</h4>
+                  <div style="background: var(--bg-input); border: 1px solid var(--border-glow); border-radius: var(--radius-md); padding: 18px; font-size: 13px; line-height: 2.0; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                    
+                    <div style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                      <strong style="color: #e11d48; font-size: 14px;">🕊️ বিকাশ পারসোনাল নম্বর ✅</strong><br>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                        <code style="font-size: 16px; font-weight: 800; color: #fff;">01909548699</code>
+                        <button class="copy-payment-btn" onclick="copyPaymentNumber('01909548699', 'bKash')"><i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copy</button>
+                      </div>
+                      <small style="color: var(--text-muted);">(Send Money)</small>
+                    </div>
+
+                    <div style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                      <strong style="color: #f97316; font-size: 14px;">💰 নগদ পারসোনাল নম্বর ✅</strong><br>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                        <code style="font-size: 16px; font-weight: 800; color: #fff;">01909548699</code>
+                        <button class="copy-payment-btn" onclick="copyPaymentNumber('01909548699', 'Nagad')"><i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copy</button>
+                      </div>
+                      <small style="color: var(--text-muted);">(Send Money)</small>
+                    </div>
+
+                    <div style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                      <strong style="color: #a855f7; font-size: 14px;">💴 রকেট পারসোনাল নম্বর ✅</strong><br>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                        <code style="font-size: 16px; font-weight: 800; color: #fff;">019095486999</code>
+                        <button class="copy-payment-btn" onclick="copyPaymentNumber('019095486999', 'Rocket')"><i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copy</button>
+                      </div>
+                      <small style="color: var(--text-muted);">(Send Money)</small>
+                    </div>
+
+                    <div style="margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                      <strong style="color: #eab308; font-size: 14px;">🌐 Binance UID ✅</strong><br>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                        <code style="font-size: 16px; font-weight: 800; color: #fff;">1124018106</code>
+                        <button class="copy-payment-btn" onclick="copyPaymentNumber('1124018106', 'Binance UID')"><i data-lucide="copy" style="width: 12px; height: 12px;"></i> Copy</button>
+                      </div>
+                    </div>
+                    
+                    <hr style="border-color: var(--border-color); margin: 12px 0;">
+                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 12px; border-radius: 8px; font-weight: 700; color: var(--success); font-size: 13px; text-align: center;">
+                      💎 এক্সচেঞ্জ রেট: ১ ডলার (1 USD) = ৳127 BDT
+                    </div>
+                  </div>
+                </div>
+                <form id="deposit-form">
+                  <div class="field-group">
+                    <label class="field-label">Select Method</label>
+                    <select id="deposit-method" class="select-box" required>
+                      <option value="bKash">bKash Personal (01909548699)</option>
+                      <option value="Nagad">Nagad Personal (01909548699)</option>
+                      <option value="Rocket">Rocket Personal (019095486999)</option>
+                      <option value="Binance">Binance Pay (UID: 1124018106)</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Amount in BDT (৳)</label>
+                    <input type="number" id="deposit-amount-bdt" class="input-box" min="10" placeholder="127" required>
+                    <div class="input-range-hint">* ৳127 BDT = $1.00 USD</div>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Sender Phone / Account</label>
+                    <input type="text" id="deposit-sender" class="input-box" placeholder="01909548699" required>
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Transaction ID (TrxID)</label>
+                    <input type="text" id="deposit-trxid" class="input-box" placeholder="TrxID (e.g. 8N7A6D5C)" required>
+                  </div>
+                  <button type="submit" class="btn-submit-purple">Submit Deposit Request</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="dark-card">
+            <div class="card-top-bar"><div class="card-title">My Deposit History</div></div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>ID</th><th>Method</th><th>Sender</th><th>TrxID</th><th>Amount (BDT)</th><th>USD Equivalent</th><th>Status</th><th>Date</th></tr>
+                  </thead>
+                  <tbody id="my-deposits-table-body">
+                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No deposits yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 6: User Dashboard Summary -->
+        <section id="tab-dashboard" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar"><div class="card-title"><i data-lucide="bar-chart-2" style="color: var(--purple-primary);"></i> Dashboard Overview</div></div>
+            <div class="card-body">
+              <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Welcome back, <span id="dash-user-name">User</span>!</h3>
+              <p style="color: var(--text-muted);">Manage your social media growth campaigns, monitor live order statuses, and track your account balance.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= ADMIN ONLY TABS ================= -->
+
+        <!-- ADMIN TAB 1: Overview -->
+        <section id="tab-admin-overview" class="tab-pane">
+          <div class="dark-card" style="margin-bottom: 24px; border-color: var(--purple-primary); background: linear-gradient(135deg, rgba(20,22,38,0.9), rgba(139,92,246,0.15));">
+            <div class="card-top-bar">
+              <div class="card-title" style="color: var(--purple-primary);"><i data-lucide="plug"></i> SMM API Provider Connection (bestfollows.com)</div>
+              <button class="badge-btn" onclick="fetchAdminProviderData()">Refresh API Balance</button>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">API Provider URL</div>
+                  <div style="font-size: 13px; font-weight: 700; color: #fff; margin-top: 4px; font-family: monospace;">https://bestfollows.com/api/v2</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Live Main API Balance</div>
+                  <div style="font-size: 18px; font-weight: 800; color: var(--success); margin-top: 2px; font-family: monospace;" id="admin-live-provider-bal">Fetching balance...</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Available Provider Services</div>
+                  <div style="font-size: 18px; font-weight: 800; color: var(--cyan-accent); margin-top: 2px;" id="admin-live-provider-services">694 Services</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">API Status</div>
+                  <div style="font-size: 13px; font-weight: 700; color: var(--success); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block;"></span> Active & Connected
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-cards-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrapper"><i data-lucide="users"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Active Users</span>
+                <span class="stat-value" id="admin-stat-users">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.12); color: var(--success);"><i data-lucide="dollar-sign"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Total User Balances</span>
+                <span class="stat-value" id="admin-stat-balances">৳0.00 BDT</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Pending Deposits</span>
+                <span class="stat-value" id="admin-stat-deposits">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.12); color: var(--danger);"><i data-lucide="trash-2"></i></div>
+              <div class="stat-info">
+                <span class="stat-title">Recycle Bin Items</span>
+                <span class="stat-value" id="admin-stat-trash-count">0</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN TAB 2: User Management -->
+        <section id="tab-admin-users" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar">
+              <div class="card-title"><i data-lucide="users" style="color: var(--purple-primary);"></i> Active User Accounts</div>
+              <button class="badge-btn" onclick="fetchAdminUsers()">Refresh Users</button>
+            </div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>ID</th><th>Name / Username</th><th>Email</th><th>Phone</th><th>Current Balance</th><th>Total Spent</th><th>Role</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody id="admin-users-table-body">
+                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading users...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN TAB 3: Recycle Bin -->
+        <section id="tab-admin-recycle-bin" class="tab-pane">
+          <div class="dark-card" style="border-color: var(--danger);">
+            <div class="card-top-bar">
+              <div class="card-title" style="color: #f87171;"><i data-lucide="trash-2"></i> Recycle Bin (রিসাইকেল বিন - সফট ডিলিট একাউন্টস)</div>
+              <button class="badge-btn" onclick="fetchAdminRecycleBinUsers()">Refresh Trash</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                এখানে ডিলিট করা ইউজারদের সাময়িকভাবে রাখা হয়েছে। আপনি চাইলে তাদের <strong>Restore (পুনরুদ্ধার)</strong> করতে পারেন অথবা <strong>Permanent Delete (স্থায়ীভাবে মুছে ফেলুন)</strong> করতে পারেন।
+              </p>
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>ID</th><th>Name / Username</th><th>Email</th><th>Balance</th><th>Deleted Date</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody id="admin-recycle-table-body">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Recycle bin is empty</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN TAB 4: Deposit Requests -->
+        <section id="tab-admin-deposits" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar">
+              <div class="card-title" style="color: var(--warning);"><i data-lucide="credit-card"></i> Deposit Requests</div>
+              <button class="badge-btn" onclick="fetchAdminDeposits()">Refresh Requests</button>
+            </div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>User</th><th>Method</th><th>Sender</th><th>TrxID</th><th>BDT Amount</th><th>USD Equivalent</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody id="admin-deposits-table-body">
+                    <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No pending deposit requests</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN TAB 5: All Users Orders -->
+        <section id="tab-admin-orders" class="tab-pane">
+          <div class="dark-card">
+            <div class="card-top-bar">
+              <div class="card-title"><i data-lucide="shopping-bag" style="color: var(--purple-primary);"></i> All Users Orders</div>
+              <button class="badge-btn" onclick="fetchAdminAllOrders()">Refresh All Orders</button>
+            </div>
+            <div class="card-body">
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>Order ID</th><th>User</th><th>Service Name</th><th>Link</th><th>Qty</th><th>Charge</th><th>Status</th><th>Date</th></tr>
+                  </thead>
+                  <tbody id="admin-orders-table-body">
+                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading all orders...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION OVERLAY MODAL -->
+  <div id="auth-modal-overlay" style="position: fixed; inset: 0; z-index: 9999; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="dark-card" style="width: 100%; max-width: 440px; border-color: var(--border-glow); box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+      <div id="auth-login-view" style="padding: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div class="brand-logo" style="margin: 0 auto 12px; width: 48px; height: 48px; font-size: 24px;">B</div>
+          <h2 style="font-size: 22px; font-weight: 800;">Welcome to BestFollows</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Sign in to your SMM Panel account</p>
+        </div>
+        <form id="login-form">
+          <div class="field-group">
+            <label class="field-label">Username or Email</label>
+            <input type="text" id="login-username" class="input-box" placeholder="Enter username or email" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <input type="password" id="login-password" class="input-box" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit-purple" style="margin-top: 24px;">Sign In</button>
+        </form>
+        <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px;">
+          Don't have an account? <a href="#" onclick="toggleAuthView('register')" style="color: var(--purple-primary); font-weight: 700;">Create Account</a>
+        </p>
+        <div style="margin-top: 20px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; font-size: 12px; color: var(--text-muted); text-align: center;">
+          🔑 Demo Admin Login: <strong>admin</strong> / <strong>admin123</strong>
+        </div>
+      </div>
+
+      <div id="auth-register-view" style="padding: 32px; display: none;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="font-size: 22px; font-weight: 800;">Create New Account</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Join BestFollows SMM Panel</p>
+        </div>
+        <form id="register-form">
+          <div class="field-group">
+            <label class="field-label">Full Name</label>
+            <input type="text" id="reg-name" class="input-box" placeholder="Full Name" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Username</label>
+            <input type="text" id="reg-username" class="input-box" placeholder="username" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email</label>
+            <input type="email" id="reg-email" class="input-box" placeholder="name@example.com" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Phone Number</label>
+            <input type="text" id="reg-phone" class="input-box" placeholder="017xxxxxxxx">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <input type="password" id="reg-password" class="input-box" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit-purple" style="margin-top: 24px;">Register Account</button>
+        </form>
+        <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 20px;">
+          Already have an account? <a href="#" onclick="toggleAuthView('login')" style="color: var(--purple-primary); font-weight: 700;">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN EDIT USER BALANCE MODAL -->
+  <div id="admin-balance-modal" style="position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="dark-card" style="width: 100%; max-width: 400px; padding: 24px;">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Customize User Balance</h3>
+      <input type="hidden" id="edit-user-id">
+      <div class="field-group">
+        <label class="field-label">Target User</label>
+        <input type="text" id="edit-user-username" class="input-box" readonly>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Set Exact New Balance ($ USD)</label>
+        <input type="number" step="0.01" id="edit-user-new-balance" class="input-box" placeholder="10.00" required>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn-submit-purple" onclick="submitAdminBalanceEdit()" style="flex: 1;">Save Balance</button>
+        <button class="badge-btn" onclick="closeAdminBalanceModal()" style="padding: 10px 16px; background: rgba(255,255,255,0.1); color: #fff;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

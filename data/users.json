@@ -1,0 +1,26 @@
+[
+  {
+    "id": "usr_admin",
+    "name": "Super Admin",
+    "username": "admin",
+    "email": "admin@bestfollows.com",
+    "phone": "01700000000",
+    "password": "admin123",
+    "balance": 0.7936768,
+    "spending": 0,
+    "role": "admin",
+    "created_at": "8/27/2026, 10:01:09 AM"
+  },
+  {
+    "id": "usr_1787803353060",
+    "name": "MD Shariya Sunny",
+    "username": "sunny999",
+    "email": "sahareisunny5934@gmail.com",
+    "phone": "01909548699",
+    "password": "1122mmb",
+    "balance": 0,
+    "spending": 0,
+    "role": "user",
+    "created_at": "8/27/2026, 10:02:33 AM"
+  }
+]
