@@ -432,6 +432,8 @@ app.get('/api/balance', async (req, res) => {
   }
 });
 
+const PROFIT_MARGIN_MULTIPLIER = 1.20; // 20% profit margin added automatically to all rates
+
 // Get Services
 app.get('/api/services', async (req, res) => {
   try {
@@ -440,8 +442,18 @@ app.get('/api/services', async (req, res) => {
       return res.status(400).json({ error: 'Invalid response from API provider', data: services });
     }
 
+    // Apply 20% profit margin markup to all service rates
+    const markedUpServices = services.map(service => {
+      const originalRate = parseFloat(service.rate) || 0;
+      const markedUpRate = (originalRate * PROFIT_MARGIN_MULTIPLIER).toFixed(4);
+      return {
+        ...service,
+        rate: markedUpRate
+      };
+    });
+
     const categoriesMap = {};
-    services.forEach(service => {
+    markedUpServices.forEach(service => {
       const cat = service.category || 'General Services';
       if (!categoriesMap[cat]) {
         categoriesMap[cat] = [];
@@ -450,9 +462,9 @@ app.get('/api/services', async (req, res) => {
     });
 
     res.json({
-      total: services.length,
+      total: markedUpServices.length,
       categories: categoriesMap,
-      services: services
+      services: markedUpServices
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch services', details: error.message });
