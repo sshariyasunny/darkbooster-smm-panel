@@ -98,6 +98,9 @@
         <a class="nav-link" data-tab="tab-admin-orders">
           <span class="nav-icon-badge allorders-badge"><i class="fa-solid fa-boxes-stacked"></i></span> All Users Orders
         </a>
+        <a class="nav-link" data-tab="tab-admin-gsheets" style="color: #10b981;">
+          <span class="nav-icon-badge gsheets-badge" style="background: rgba(16,185,129,0.15); color: #10b981;"><i class="fa-solid fa-file-excel"></i></span> Google Sheets (ক্লাউড ব্যাকআপ ও রিকভারি)
+        </a>
         <a class="nav-link" data-tab="tab-services">
           <span class="nav-icon-badge catalog-badge"><i class="fa-solid fa-list-check"></i></span> Services List
         </a>
@@ -609,21 +612,103 @@
         <!-- ADMIN TAB 5: All Users Orders -->
         <section id="tab-admin-orders" class="tab-pane">
           <div class="dark-card">
-            <div class="card-top-bar">
+            <div class="card-top-bar" style="flex-wrap: wrap; gap: 12px;">
               <div class="card-title"><i data-lucide="shopping-bag" style="color: var(--purple-primary);"></i> All Users Orders</div>
-              <button class="badge-btn" onclick="fetchAdminAllOrders()">Refresh All Orders</button>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <select id="admin-orders-status-filter" class="input-box" style="padding: 6px 12px; font-size: 13px; width: auto; height: 36px;" onchange="fetchAdminAllOrders()">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Partial">Partial</option>
+                  <option value="Canceled">Canceled / Refunded</option>
+                </select>
+                <input type="text" id="admin-orders-search" class="input-box" placeholder="Search Order ID / User..." style="padding: 6px 12px; font-size: 13px; width: 180px; height: 36px;" oninput="fetchAdminAllOrders()">
+                <button class="badge-btn" onclick="fetchAdminAllOrders()" style="height: 36px;">Refresh Orders</button>
+              </div>
             </div>
             <div class="card-body">
               <div class="data-table-wrapper">
                 <table class="data-table">
                   <thead>
-                    <tr><th>Order ID</th><th>User</th><th>Service Name</th><th>Link</th><th>Qty</th><th>Charge</th><th>Status</th><th>Date</th></tr>
+                    <tr><th>Order ID</th><th>User</th><th>Service Name</th><th>Link</th><th>Qty</th><th>Charge</th><th>Status</th><th>Date</th><th>Action</th></tr>
                   </thead>
                   <tbody id="admin-orders-table-body">
-                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading all orders...</td></tr>
+                    <tr><td colspan="9" style="text-align: center; color: var(--text-muted);">Loading all orders...</td></tr>
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN TAB 6: Google Sheets Backup & Recovery -->
+        <section id="tab-admin-gsheets" class="tab-pane">
+          <div class="dark-card" style="border-color: rgba(16,185,129,0.3);">
+            <div class="card-top-bar" style="border-bottom: 1px solid rgba(16,185,129,0.2);">
+              <div class="card-title" style="color: #10b981;">
+                <i class="fa-solid fa-file-excel" style="color: #10b981; margin-right: 8px;"></i> 
+                Google Sheets Auto-Backup & Data Recovery (গুগল সিট ব্যাকআপ ও অটো-রিকভারি)
+              </div>
+              <button class="badge-btn" onclick="openAppsScriptModal()" style="background: rgba(16,185,129,0.2); color: #34d399; border-color: rgba(16,185,129,0.4);">
+                <i class="fa-solid fa-code"></i> Copy Apps Script Code
+              </button>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                গুগল সিটের সাথে প্যানেল কানেক্ট করে রাখলে আপনার ইউজারের ব্যালেন্স, রেজিস্ট্রেশন ডেটা, ডিপোজিট এবং অর্ডার ইতিহাস ১০০% নিরাপদ থাকবে। ডেটা মুছে গেলেও ১ ক্লিকে সব রিকভার করা যাবে।
+              </p>
+
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glow); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 12px;">Google Sheets Webhook Setup</h4>
+                
+                <div class="field-group" style="margin-bottom: 16px;">
+                  <label class="field-label">Google Sheets Web App URL</label>
+                  <input type="text" id="gsheets-webhook-url" class="input-box" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                  <button class="btn-submit-purple" onclick="saveGoogleSheetsSettings()" style="background: linear-gradient(135deg, #10b981, #059669); width: auto; padding: 10px 24px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Webhook URL
+                  </button>
+                  <button class="badge-btn" onclick="testGoogleSheetsConnectionUI()" style="padding: 10px 18px; height: 42px; background: rgba(6,182,212,0.15); color: #06b6d4; border-color: rgba(6,182,212,0.3);">
+                    <i class="fa-solid fa-plug"></i> Test Connection
+                  </button>
+                  <span id="gsheets-status-badge" class="badge-btn" style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 8px 14px; height: 42px; font-weight: 600;">Status: Unconfigured</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                <!-- Backup Action Card -->
+                <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 20px;">
+                  <h4 style="font-size: 16px; font-weight: 700; color: #34d399; margin-bottom: 8px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Manual Backup (ইনস্ট্যান্ট ব্যাকআপ)
+                  </h4>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                    বর্তমান সার্ভারের সব ইউজার, ব্যালেন্স, ডিপোজিট এবং অর্ডার ম্যানুয়ালি গুগল সিটে পাঠাতে বাটনে চাপুন।
+                  </p>
+                  <button class="badge-btn" onclick="triggerManualGoogleSheetsBackup()" style="width: 100%; padding: 12px; background: #10b981; color: #fff; font-weight: 700; border: none; font-size: 14px; justify-content: center;">
+                    📤 Backup Now to Google Sheet
+                  </button>
+                  <div id="gsheets-last-sync-time" style="font-size: 11px; color: var(--text-muted); margin-top: 10px; text-align: center;">Last Sync: Never</div>
+                </div>
+
+                <!-- Restore Action Card -->
+                <div style="background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 20px;">
+                  <h4 style="font-size: 16px; font-weight: 700; color: #f87171; margin-bottom: 8px;">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Data Recovery (ডেটা রিকভারি)
+                  </h4>
+                  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                    সার্ভারের ডেটা হারিয়ে গেলে বা সমস্যা হলে গুগল সিট থেকে ১ ক্লিকে সব ডেটা রি-স্টোর করুন।
+                  </p>
+                  <button class="badge-btn" onclick="triggerManualGoogleSheetsRestore()" style="width: 100%; padding: 12px; background: rgba(239,68,68,0.2); color: #f87171; border-color: rgba(239,68,68,0.4); font-weight: 700; font-size: 14px; justify-content: center;">
+                    📥 Auto-Recover / Restore Data
+                  </button>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px; text-align: center;">Safe & Auto-recovers on server start if local file is missing</div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -709,6 +794,69 @@
       <div style="display: flex; gap: 12px; margin-top: 20px;">
         <button class="btn-submit-purple" onclick="submitAdminBalanceEdit()" style="flex: 1;">Save Balance</button>
         <button class="badge-btn" onclick="closeAdminBalanceModal()" style="padding: 10px 16px; background: rgba(255,255,255,0.1); color: #fff;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN EDIT ORDER STATUS MODAL -->
+  <div id="admin-order-status-modal" style="position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="dark-card" style="width: 100%; max-width: 440px; padding: 24px;">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;"><i data-lucide="edit-3" style="color: var(--purple-primary); width:20px; vertical-align:middle;"></i> Update Order Status</h3>
+      <input type="hidden" id="edit-order-id">
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label">Order & User Info</label>
+        <div id="edit-order-info-display" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 13px; font-weight: 600;"></div>
+      </div>
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label">Select Order Status</label>
+        <select id="edit-order-status-select" class="input-box">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Processing">Processing</option>
+          <option value="Completed">Completed</option>
+          <option value="Partial">Partial</option>
+          <option value="Canceled">Canceled</option>
+          <option value="Refunded">Refunded</option>
+        </select>
+      </div>
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label">Remains Count (Optional)</label>
+        <input type="number" id="edit-order-remains-input" class="input-box" placeholder="0">
+      </div>
+      <div class="field-group" style="margin-bottom: 16px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+          <input type="checkbox" id="edit-order-refund-checkbox" style="width: 16px; height: 16px; accent-color: var(--purple-primary);">
+          <span>Refund charge ($ USD) back to user's balance</span>
+        </label>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button class="btn-submit-purple" onclick="submitAdminOrderStatusEdit()" style="flex: 1;">Update Status</button>
+        <button class="badge-btn" onclick="closeAdminOrderStatusModal()" style="padding: 10px 16px; background: rgba(255,255,255,0.1); color: #fff;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOOGLE APPS SCRIPT CODE MODAL -->
+  <div id="apps-script-modal" style="position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div class="dark-card" style="width: 100%; max-width: 650px; max-height: 90vh; display: flex; flex-direction: column; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: #34d399;"><i class="fa-solid fa-code"></i> Google Apps Script Setup Code</h3>
+        <button class="badge-btn" onclick="closeAppsScriptModal()" style="background: rgba(255,255,255,0.1); color: #fff;">✕ Close</button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+        <strong>নির্দেশনা:</strong> Google Sheets এ যান -> Extensions -> Apps Script এ ক্লিক করুন -> নিচ থেকে সম্পূর্ণ কোড কপি করে পেস্ট করুন -> Deploy as Web App ("Anyone" access) করে URL টি প্যানেলে বসান।
+      </p>
+
+      <div style="flex: 1; overflow-y: auto; background: #0f172a; border: 1px solid var(--border-glow); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+        <pre id="apps-script-code-block" style="font-family: monospace; font-size: 11px; color: #38bdf8; margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button class="btn-submit-purple" onclick="copyAppsScriptCode()" style="background: linear-gradient(135deg, #10b981, #059669); width: auto; padding: 10px 24px;">
+          <i class="fa-solid fa-copy"></i> Copy Code to Clipboard
+        </button>
+        <button class="badge-btn" onclick="closeAppsScriptModal()" style="padding: 10px 16px; background: rgba(255,255,255,0.1); color: #fff;">Close</button>
       </div>
     </div>
   </div>

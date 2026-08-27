@@ -365,6 +365,7 @@ window.switchToTab = function(tabId) {
     fetchAdminDeposits();
     fetchAdminProviderData();
     fetchAdminRecycleBinUsers();
+    if (typeof fetchGoogleSheetsConfig === 'function') fetchGoogleSheetsConfig();
   }
 
   const sidebarEl = document.getElementById('sidebar');
@@ -971,22 +972,51 @@ function getStatusBadgeHTML(status) {
   return `<span class="badge-btn" style="background: rgba(139,92,246,0.15); color: #a855f7; font-weight:700;">${status}</span>`;
 }
 
-// Fetch All Users Orders for Admin
+// Fetch All Users Orders for Admin (With Status Filter & Search)
 window.fetchAdminAllOrders = async function() {
   if (!currentUser || currentUser.role !== 'admin') return;
   const tableBody = document.getElementById('admin-orders-table-body');
   if (!tableBody) return;
+
+  const statusFilter = (document.getElementById('admin-orders-status-filter')?.value || 'ALL').toLowerCase();
+  const searchQuery = (document.getElementById('admin-orders-search')?.value || '').toLowerCase().trim();
 
   try {
     const res = await fetch('/api/admin/orders');
     const orders = await res.json();
 
     if (!orders || orders.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">No orders found across all users</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">No orders found across all users</td></tr>';
       return;
     }
 
-    tableBody.innerHTML = orders.map(ord => `
+    const filteredOrders = orders.filter(ord => {
+      const ordStatus = (ord.status || '').toLowerCase();
+      let matchesStatus = true;
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'canceled') {
+          matchesStatus = ordStatus.includes('cancel') || ordStatus.includes('refund');
+        } else if (statusFilter === 'in progress') {
+          matchesStatus = ordStatus.includes('progress');
+        } else {
+          matchesStatus = ordStatus === statusFilter;
+        }
+      }
+
+      const matchesSearch = !searchQuery || 
+        String(ord.id).toLowerCase().includes(searchQuery) || 
+        (ord.username || '').toLowerCase().includes(searchQuery) ||
+        (ord.service_name || '').toLowerCase().includes(searchQuery);
+
+      return matchesStatus && matchesSearch;
+    });
+
+    if (filteredOrders.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">No orders match the selected filter</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = filteredOrders.map(ord => `
       <tr>
         <td><strong style="color: var(--purple-primary); font-family: monospace;">#${ord.id}</strong></td>
         <td><strong>@${ord.username || 'User'}</strong></td>
@@ -994,12 +1024,79 @@ window.fetchAdminAllOrders = async function() {
         <td><a href="${ord.link.startsWith('http') ? ord.link : '#'}" target="_blank" style="color: var(--cyan-accent); text-decoration: none;">${ord.link}</a></td>
         <td>${ord.quantity}</td>
         <td><span style="color: var(--success); font-weight: 700;">$${ord.charge} USD</span></td>
-        <td>${getStatusBadgeHTML(ord.status)}</td>
+        <td>${getStatusBadgeHTML(ord.status)}${ord.is_manual ? ' <small style="color:var(--cyan-accent); font-size:10px;">[Manual]</small>' : ''}</td>
         <td><small style="color: var(--text-muted);">${ord.date}</small></td>
+        <td>
+          <button class="badge-btn" style="background: var(--purple-primary); color: #fff;" onclick="openAdminOrderStatusModal('${ord.id}', '${(ord.status || 'Pending').replace(/'/g, "\\'")}', '${ord.remains || 0}', '@${ord.username || 'User'}', '$${ord.charge}')">
+            Edit Status
+          </button>
+        </td>
       </tr>
     `).join('');
   } catch (err) {
     console.error(err);
+  }
+};
+
+// Admin Order Status Modal Controls
+window.openAdminOrderStatusModal = function(orderId, currentStatus, remains, username, charge) {
+  document.getElementById('edit-order-id').value = orderId;
+  const infoDisplay = document.getElementById('edit-order-info-display');
+  if (infoDisplay) {
+    infoDisplay.innerHTML = `Order <strong style="color:var(--purple-primary);">#${orderId}</strong> for <strong>${username}</strong> (${charge})`;
+  }
+  
+  const statusSelect = document.getElementById('edit-order-status-select');
+  if (statusSelect) {
+    let matched = false;
+    for (let opt of statusSelect.options) {
+      if (opt.value.toLowerCase() === currentStatus.toLowerCase()) {
+        statusSelect.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) statusSelect.value = 'Pending';
+  }
+
+  const remainsInput = document.getElementById('edit-order-remains-input');
+  if (remainsInput) remainsInput.value = remains || 0;
+
+  const refundCheckbox = document.getElementById('edit-order-refund-checkbox');
+  if (refundCheckbox) refundCheckbox.checked = false;
+
+  document.getElementById('admin-order-status-modal').style.display = 'flex';
+};
+
+window.closeAdminOrderStatusModal = function() {
+  document.getElementById('admin-order-status-modal').style.display = 'none';
+};
+
+window.submitAdminOrderStatusEdit = async function() {
+  const orderId = document.getElementById('edit-order-id').value;
+  const newStatus = document.getElementById('edit-order-status-select').value;
+  const remains = document.getElementById('edit-order-remains-input').value;
+  const refundUser = document.getElementById('edit-order-refund-checkbox').checked;
+
+  try {
+    const res = await fetch('/api/admin/orders/update-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, newStatus, remains, refundUser })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(data.message || 'Order status updated successfully!', 'success');
+      closeAdminOrderStatusModal();
+      fetchAdminAllOrders();
+      if (typeof fetchOrdersHistory === 'function') fetchOrdersHistory();
+      if (typeof fetchAdminUsers === 'function') fetchAdminUsers();
+    } else {
+      showToast(data.error || 'Failed to update order status', 'error');
+    }
+  } catch (err) {
+    showToast('Error updating order status', 'error');
   }
 };
 
@@ -1289,4 +1386,213 @@ document.addEventListener('visibilitychange', () => {
     }
   }
 });
+
+// ----------------------------------------------------
+// GOOGLE SHEETS BACKUP & AUTO RECOVERY CONTROLS
+// ----------------------------------------------------
+
+window.fetchGoogleSheetsConfig = async function() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  const urlInput = document.getElementById('gsheets-webhook-url');
+  const statusBadge = document.getElementById('gsheets-status-badge');
+  const syncTimeEl = document.getElementById('gsheets-last-sync-time');
+
+  try {
+    const res = await fetch('/api/admin/google-sheets/config');
+    const config = await res.json();
+
+    if (urlInput) urlInput.value = config.webhook_url || '';
+
+    if (statusBadge) {
+      if (config.webhook_url) {
+        statusBadge.textContent = 'Status: Connected & Active';
+        statusBadge.style.background = 'rgba(16,185,129,0.15)';
+        statusBadge.style.color = '#10b981';
+      } else {
+        statusBadge.textContent = 'Status: Unconfigured';
+        statusBadge.style.background = 'rgba(245,158,11,0.15)';
+        statusBadge.style.color = '#f59e0b';
+      }
+    }
+
+    if (syncTimeEl) {
+      syncTimeEl.textContent = `Last Sync: ${config.last_sync || 'Never'}`;
+    }
+  } catch (err) {
+    console.error('Fetch Google Sheets config error:', err);
+  }
+};
+
+window.saveGoogleSheetsSettings = async function() {
+  const urlInput = document.getElementById('gsheets-webhook-url');
+  const webhookUrl = urlInput ? urlInput.value.trim() : '';
+
+  try {
+    const res = await fetch('/api/admin/google-sheets/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ webhook_url: webhookUrl, enabled: true })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('Google Sheets Webhook URL saved successfully!', 'success');
+      fetchGoogleSheetsConfig();
+    } else {
+      showToast('Failed to save settings', 'error');
+    }
+  } catch (err) {
+    showToast('Error saving Google Sheets configuration', 'error');
+  }
+};
+
+window.testGoogleSheetsConnectionUI = async function() {
+  const urlInput = document.getElementById('gsheets-webhook-url');
+  const webhookUrl = urlInput ? urlInput.value.trim() : '';
+  if (!webhookUrl) {
+    showToast('Please enter a Google Sheets Webhook URL first.', 'warning');
+    return;
+  }
+
+  showToast('Testing connection with Google Sheets...', 'info');
+
+  try {
+    const res = await fetch('/api/admin/google-sheets/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(data.message || 'Google Sheets Connection Successful!', 'success');
+      fetchGoogleSheetsConfig();
+    } else {
+      showToast(data.error || 'Google Sheets connection failed', 'error');
+    }
+  } catch (err) {
+    showToast('Connection test error', 'error');
+  }
+};
+
+window.triggerManualGoogleSheetsBackup = async function() {
+  showToast('Pushing backup to Google Sheets...', 'info');
+
+  try {
+    const res = await fetch('/api/admin/google-sheets/backup', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('All Users, Deposits & Orders backed up to Google Sheets!', 'success');
+      fetchGoogleSheetsConfig();
+    } else {
+      showToast(data.error || 'Backup to Google Sheets failed', 'error');
+    }
+  } catch (err) {
+    showToast('Server error while performing backup', 'error');
+  }
+};
+
+window.triggerManualGoogleSheetsRestore = async function() {
+  if (!confirm('⚠️ Are you sure you want to RESTORE all database records from Google Sheets? This will sync local storage with Google Sheets backup.')) return;
+
+  showToast('Fetching backup data from Google Sheets...', 'info');
+
+  try {
+    const res = await fetch('/api/admin/google-sheets/restore', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(data.message || 'Data recovered successfully from Google Sheets!', 'success');
+      if (typeof fetchAdminUsers === 'function') fetchAdminUsers();
+      if (typeof fetchAdminDeposits === 'function') fetchAdminDeposits();
+      if (typeof fetchAdminAllOrders === 'function') fetchAdminAllOrders();
+      if (typeof fetchOrdersHistory === 'function') fetchOrdersHistory();
+    } else {
+      showToast(data.error || 'Recovery from Google Sheets failed', 'error');
+    }
+  } catch (err) {
+    showToast('Server error while recovering data', 'error');
+  }
+};
+
+const APPS_SCRIPT_CODE_STRING = `/**
+ * Dark Booster SMM Panel - Google Sheets Backup & Recovery Apps Script
+ */
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action || 'sync';
+    if (action === 'restore' || action === 'fetch') return getBackupDataResponse();
+    if (action === 'ping' || action === 'test') {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Google Sheets Backup Webhook is online!' })).setMimeType(ContentService.MimeType.JSON);
+    }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var backupSheet = getOrCreateSheet(ss, "RawBackup");
+    backupSheet.clear();
+    backupSheet.getRange(1, 1).setValue("BACKUP_DATA");
+    backupSheet.getRange(2, 1).setValue(JSON.stringify({ users: data.users || [], deposits: data.deposits || [], orders: data.orders || [], updated_at: new Date().toISOString() }));
+
+    if (data.users && Array.isArray(data.users)) {
+      var usersSheet = getOrCreateSheet(ss, "Users");
+      usersSheet.clear();
+      usersSheet.appendRow(["User ID", "Name", "Username", "Email", "Phone", "Balance ($)", "Spending ($)", "Role", "Date"]);
+      data.users.forEach(function(u) { usersSheet.appendRow([u.id, u.name, u.username, u.email, u.phone || '', u.balance, u.spending || 0, u.role, u.created_at || '']); });
+    }
+    if (data.deposits && Array.isArray(data.deposits)) {
+      var depSheet = getOrCreateSheet(ss, "Deposits");
+      depSheet.clear();
+      depSheet.appendRow(["Deposit ID", "User ID", "Username", "Method", "Trx ID", "Sender", "Amount BDT", "Amount USD", "Status", "Date"]);
+      data.deposits.forEach(function(d) { depSheet.appendRow([d.id, d.user_id, d.username, d.method, d.trx_id, d.sender_number || '', d.amount_bdt, d.amount_usd, d.status, d.date]); });
+    }
+    if (data.orders && Array.isArray(data.orders)) {
+      var ordSheet = getOrCreateSheet(ss, "Orders");
+      ordSheet.clear();
+      ordSheet.appendRow(["Order ID", "User ID", "Username", "Service ID", "Service Name", "Link", "Quantity", "Charge ($)", "Status", "Remains", "Date"]);
+      data.orders.forEach(function(o) { ordSheet.appendRow([o.id, o.user_id, o.username, o.service_id, o.service_name, o.link, o.quantity, o.charge, o.status, o.remains || 0, o.date]); });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Data backed up to Google Sheets successfully!' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+function doGet(e) { return getBackupDataResponse(); }
+function getBackupDataResponse() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var backupSheet = ss.getSheetByName("RawBackup");
+    if (!backupSheet) return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'No RawBackup sheet found.' })).setMimeType(ContentService.MimeType.JSON);
+    var jsonStr = backupSheet.getRange(2, 1).getValue();
+    if (!jsonStr) return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'RawBackup is empty.' })).setMimeType(ContentService.MimeType.JSON);
+    var parsed = JSON.parse(jsonStr);
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', users: parsed.users || [], deposits: parsed.deposits || [], orders: parsed.orders || [], updated_at: parsed.updated_at })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+function getOrCreateSheet(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+  return sheet;
+}`;
+
+window.openAppsScriptModal = function() {
+  const modal = document.getElementById('apps-script-modal');
+  const codeBlock = document.getElementById('apps-script-code-block');
+  if (codeBlock) codeBlock.textContent = APPS_SCRIPT_CODE_STRING;
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeAppsScriptModal = function() {
+  const modal = document.getElementById('apps-script-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.copyAppsScriptCode = function() {
+  navigator.clipboard.writeText(APPS_SCRIPT_CODE_STRING).then(() => {
+    showToast('Apps Script code copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Failed to copy. Please select and copy manually.', 'error');
+  });
+};
 

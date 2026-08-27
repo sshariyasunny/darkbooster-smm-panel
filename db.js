@@ -112,11 +112,30 @@ function initStorage() {
   }
 }
 
+const googleSheets = require('./googleSheets');
+
 initStorage();
 
 // -------------------------------------------------------------
 // PUBLIC DATA ACCESS METHODS
 // -------------------------------------------------------------
+
+const dbExports = {
+  getUsers,
+  saveUsers,
+  getDeposits,
+  saveDeposits,
+  getOrders,
+  saveOrders,
+  getTelegramConfig,
+  saveTelegramConfig,
+  defaultAdmin
+};
+
+// Attempt auto-recovery from Google Sheets if local storage is missing or empty
+setTimeout(() => {
+  googleSheets.autoRecoverIfEmpty(dbExports).catch(() => {});
+}, 1000);
 
 function getUsers() {
   const users = safeReadJson(usersFilePath, [defaultAdmin]);
@@ -132,6 +151,7 @@ function saveUsers(users) {
     users.unshift(defaultAdmin);
   }
   safeWriteJson(usersFilePath, users);
+  googleSheets.triggerDebouncedSync(dbExports);
 }
 
 function getDeposits() {
@@ -141,6 +161,7 @@ function getDeposits() {
 function saveDeposits(deposits) {
   if (!Array.isArray(deposits)) return;
   safeWriteJson(depositsFilePath, deposits);
+  googleSheets.triggerDebouncedSync(dbExports);
 }
 
 function getOrders() {
@@ -150,6 +171,7 @@ function getOrders() {
 function saveOrders(orders) {
   if (!Array.isArray(orders)) return;
   safeWriteJson(ordersFilePath, orders);
+  googleSheets.triggerDebouncedSync(dbExports);
 }
 
 function getTelegramConfig() {
@@ -173,14 +195,4 @@ function saveTelegramConfig(config) {
   safeWriteJson(telegramConfigFilePath, config);
 }
 
-module.exports = {
-  getUsers,
-  saveUsers,
-  getDeposits,
-  saveDeposits,
-  getOrders,
-  saveOrders,
-  getTelegramConfig,
-  saveTelegramConfig,
-  defaultAdmin
-};
+module.exports = dbExports;

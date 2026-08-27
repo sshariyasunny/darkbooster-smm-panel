@@ -685,7 +685,7 @@ async function syncOrdersStatus(ordersToSync) {
 
   const terminalStatuses = ['completed', 'canceled', 'cancelled', 'refunded', 'canceled & refunded'];
   const activeOrders = ordersToSync.filter(o => 
-    !o.status || !terminalStatuses.includes(String(o.status).toLowerCase())
+    !o.is_manual && (!o.status || !terminalStatuses.includes(String(o.status).toLowerCase()))
   );
 
   if (activeOrders.length === 0) return;
@@ -703,7 +703,7 @@ async function syncOrdersStatus(ordersToSync) {
         const liveInfo = statusData[activeOrd.id] || statusData[String(activeOrd.id)];
         if (liveInfo && liveInfo.status) {
           const idx = allOrders.findIndex(o => String(o.id) === String(activeOrd.id));
-          if (idx !== -1) {
+          if (idx !== -1 && !allOrders[idx].is_manual) {
             let newStatus = liveInfo.status;
             if (newStatus === 'In progress') newStatus = 'In Progress';
             
@@ -784,6 +784,87 @@ app.get('/api/admin/orders', async (req, res) => {
   await syncOrdersStatus(orders);
   orders = getOrders();
   res.json(orders);
+});
+
+// Admin: Update Order Status Manually & Optional Refund
+app.post('/api/admin/orders/update-status', (req, res) => {
+  const { orderId, newStatus, remains, refundUser } = req.body;
+  if (!orderId || !newStatus) {
+    return res.status(400).json({ error: 'orderId and newStatus are required' });
+  }
+
+  const orders = getOrders();
+  const orderIndex = orders.findIndex(o => String(o.id) === String(orderId));
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const order = orders[orderIndex];
+  order.status = newStatus;
+  order.is_manual = true; // Mark as manually set by admin to prevent auto-sync overwrite
+
+  if (remains !== undefined && remains !== null && remains !== '') {
+    order.remains = parseInt(remains) || 0;
+  }
+
+  let refundMessage = '';
+  if (refundUser) {
+    const users = getUsers();
+    const userIndex = users.findIndex(u => u.id === order.user_id);
+    if (userIndex !== -1) {
+      const chargeAmount = parseFloat(order.charge) || 0;
+      users[userIndex].balance += chargeAmount;
+      users[userIndex].spending = Math.max(0, (users[userIndex].spending || 0) - chargeAmount);
+      saveUsers(users);
+      refundMessage = ` & $${chargeAmount.toFixed(4)} USD refunded to @${order.username}`;
+    }
+  }
+
+  saveOrders(orders);
+
+  res.json({
+    success: true,
+    message: `Order #${orderId} status updated to '${newStatus}'${refundMessage}`,
+    order
+  });
+});
+
+// ----------------------------------------------------
+// GOOGLE SHEETS BACKUP & AUTO RECOVERY API ROUTES
+// ----------------------------------------------------
+
+const googleSheets = require('./googleSheets');
+
+// Get Google Sheets Config
+app.get('/api/admin/google-sheets/config', (req, res) => {
+  res.json(googleSheets.getGoogleSheetsConfig());
+});
+
+// Save Google Sheets Config
+app.post('/api/admin/google-sheets/config', (req, res) => {
+  const { webhook_url, enabled } = req.body;
+  const updated = googleSheets.saveGoogleSheetsConfig({ webhook_url, enabled });
+  res.json({ success: true, config: updated });
+});
+
+// Trigger Instant Manual Backup to Google Sheets
+app.post('/api/admin/google-sheets/backup', async (req, res) => {
+  const result = await googleSheets.syncToGoogleSheets(db);
+  res.json(result);
+});
+
+// Trigger Manual Data Recovery from Google Sheets
+app.post('/api/admin/google-sheets/restore', async (req, res) => {
+  const result = await googleSheets.restoreFromGoogleSheets(db);
+  res.json(result);
+});
+
+// Test Connection with Google Sheets Webhook
+app.post('/api/admin/google-sheets/test', async (req, res) => {
+  const { url } = req.body;
+  const result = await googleSheets.testGoogleSheetsConnection(url);
+  res.json(result);
 });
 
 // Filter missing static assets so they return 404 instead of serving index.html
