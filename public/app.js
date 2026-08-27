@@ -435,7 +435,7 @@ function onServiceSelect(serviceId) {
 
   const qtyInput = document.getElementById('input-quantity');
   if (qtyInput) {
-    qtyInput.value = selectedServiceObj.min || 1000;
+    qtyInput.value = '0';
     document.getElementById('quantity-range-hint').textContent = `Min ${parseInt(selectedServiceObj.min).toLocaleString()} - Max ${parseInt(selectedServiceObj.max).toLocaleString()}`;
   }
 
