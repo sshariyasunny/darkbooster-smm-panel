@@ -8,6 +8,7 @@ let currentCurrency = 'BDT'; // DEFAULT CURRENCY BDT (৳)
 const BDT_CONVERSION_RATE = 127.0; // 1 USD = 127 BDT!
 
 document.addEventListener('DOMContentLoaded', () => {
+  initThemeSwitcher();
   if (window.lucide) {
     lucide.createIcons();
   }
@@ -1116,3 +1117,33 @@ window.copyText = function(elementId) {
     showToast('Link copied to clipboard!', 'info');
   });
 };
+
+function initThemeSwitcher() {
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const themeIcon = document.getElementById('theme-icon');
+  
+  const savedTheme = localStorage.getItem('smm_theme') || 'dark';
+  applyTheme(savedTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('smm_theme', theme);
+    if (themeIcon) {
+      if (theme === 'light') {
+        themeIcon.className = 'fa-solid fa-sun';
+        themeIcon.style.color = '#f59e0b';
+      } else {
+        themeIcon.className = 'fa-solid fa-moon';
+        themeIcon.style.color = '#a855f7';
+      }
+    }
+  }
+}
