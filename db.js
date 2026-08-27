@@ -145,33 +145,39 @@ function getUsers() {
   return users;
 }
 
-function saveUsers(users) {
+function saveUsers(users, skipSync = false) {
   if (!Array.isArray(users)) return;
   if (!users.some(u => u.username === 'admin')) {
     users.unshift(defaultAdmin);
   }
   safeWriteJson(usersFilePath, users);
-  googleSheets.triggerDebouncedSync(dbExports);
+  if (!skipSync) {
+    googleSheets.triggerDebouncedSync(dbExports);
+  }
 }
 
 function getDeposits() {
   return safeReadJson(depositsFilePath, []);
 }
 
-function saveDeposits(deposits) {
+function saveDeposits(deposits, skipSync = false) {
   if (!Array.isArray(deposits)) return;
   safeWriteJson(depositsFilePath, deposits);
-  googleSheets.triggerDebouncedSync(dbExports);
+  if (!skipSync) {
+    googleSheets.triggerDebouncedSync(dbExports);
+  }
 }
 
 function getOrders() {
   return safeReadJson(ordersFilePath, []);
 }
 
-function saveOrders(orders) {
+function saveOrders(orders, skipSync = false) {
   if (!Array.isArray(orders)) return;
   safeWriteJson(ordersFilePath, orders);
-  googleSheets.triggerDebouncedSync(dbExports);
+  if (!skipSync) {
+    googleSheets.triggerDebouncedSync(dbExports);
+  }
 }
 
 function getTelegramConfig() {

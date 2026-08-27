@@ -133,16 +133,16 @@ async function restoreFromGoogleSheets(db) {
     let restoredCount = 0;
 
     if (responseData.users && Array.isArray(responseData.users) && responseData.users.length > 0) {
-      db.saveUsers(responseData.users);
+      db.saveUsers(responseData.users, true);
       restoredCount += responseData.users.length;
     }
 
     if (responseData.deposits && Array.isArray(responseData.deposits)) {
-      db.saveDeposits(responseData.deposits);
+      db.saveDeposits(responseData.deposits, true);
     }
 
     if (responseData.orders && Array.isArray(responseData.orders)) {
-      db.saveOrders(responseData.orders);
+      db.saveOrders(responseData.orders, true);
     }
 
     console.log(`✅ [Google Sheets Recovery] Successfully restored data from Google Sheets!`);

@@ -867,6 +867,69 @@ app.post('/api/admin/google-sheets/test', async (req, res) => {
   res.json(result);
 });
 
+// ----------------------------------------------------
+// TELEGRAM BOT ADMIN CONFIG & TEST API ROUTES
+// ----------------------------------------------------
+
+// Get Telegram Bot Config & Status
+app.get('/api/admin/telegram/config', (req, res) => {
+  const config = db.getTelegramConfig();
+  res.json({
+    bot_token: config.bot_token || '',
+    admin_chat_id: config.admin_chat_id || '',
+    polling_active: telegramBot.polling
+  });
+});
+
+// Update Telegram Bot Config & Restart Polling
+app.post('/api/admin/telegram/config', (req, res) => {
+  const { bot_token, admin_chat_id } = req.body;
+  const currentConfig = db.getTelegramConfig();
+  
+  const newConfig = {
+    bot_token: bot_token !== undefined ? bot_token.trim() : currentConfig.bot_token,
+    admin_chat_id: admin_chat_id !== undefined ? admin_chat_id.trim() : currentConfig.admin_chat_id
+  };
+
+  db.saveTelegramConfig(newConfig);
+  telegramBot.restartPolling();
+
+  res.json({ success: true, config: newConfig, message: 'Telegram Bot Configuration saved successfully!' });
+});
+
+// Test Connection with Telegram Admin Chat
+app.post('/api/admin/telegram/test', async (req, res) => {
+  const { chatId } = req.body;
+  const config = db.getTelegramConfig();
+  const targetChatId = chatId || config.admin_chat_id;
+
+  if (!config.bot_token) {
+    return res.status(400).json({ error: 'Telegram Bot Token missing. Configure TELEGRAM_BOT_TOKEN first.' });
+  }
+
+  if (!targetChatId) {
+    return res.status(400).json({ error: 'Admin Chat ID missing. Send /start to your bot in Telegram or enter Admin Chat ID.' });
+  }
+
+  const testMsg = 
+`🔔 <b>DARKBOOSTER TELEGRAM BOT TEST ALERT</b>
+
+✅ Your Telegram Bot is 100% connected & working properly!
+📅 <b>Time:</b> ${new Date().toLocaleString()}
+🌐 <b>Host:</b> ${process.env.RENDER ? 'Render Cloud Host' : 'Local Laptop Host'}
+
+You will receive real-time alerts here for:
+1. 🆕 New User Registrations
+2. 💰 Deposit Requests (with 1-Click Approve/Reject buttons)`;
+
+  const result = await telegramBot.sendMessage(targetChatId, testMsg);
+  if (result && result.ok) {
+    res.json({ success: true, message: `Test notification sent to Telegram Admin (${targetChatId}) successfully!` });
+  } else {
+    res.status(500).json({ error: 'Failed to send Telegram test message. Check Bot Token and Chat ID.' });
+  }
+});
+
 // Filter missing static assets so they return 404 instead of serving index.html
 app.use((req, res, next) => {
   if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|json|woff|woff2|ttf|eot)$/i)) {

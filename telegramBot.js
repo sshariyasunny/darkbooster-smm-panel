@@ -47,7 +47,9 @@ class TelegramBotService {
       });
       const data = await res.json();
       if (!data.ok) {
-        console.error(`Telegram API error (${method}):`, data.description);
+        if (data.error_code !== 409) {
+          console.error(`Telegram API error (${method}):`, data.description);
+        }
       }
       return data;
     } catch (err) {
@@ -81,7 +83,6 @@ class TelegramBotService {
 
     return result;
   }
-
 
   // Edit Existing Telegram Message (e.g. after approval/rejection)
   async editMessageText(chatId, messageId, text, extra = {}) {
@@ -207,7 +208,7 @@ ${statusEmoji} <b>Status:</b> ${statusText} ${adminNote ? `(${adminNote})` : ''}
   startPolling() {
     const config = getTelegramConfig();
     if (!config.bot_token) {
-      console.log('⚠️  Telegram Bot Token missing. Add TELEGRAM_BOT_TOKEN in .env to enable Telegram notifications & bot commands.');
+      console.log('⚠️  Telegram Bot Token missing. Add TELEGRAM_BOT_TOKEN in .env or Telegram Admin Config.');
       return;
     }
 
@@ -218,7 +219,20 @@ ${statusEmoji} <b>Status:</b> ${statusText} ${adminNote ? `(${adminNote})` : ''}
     this.pollLoop();
   }
 
+  stopPolling() {
+    this.polling = false;
+  }
+
+  restartPolling() {
+    this.stopPolling();
+    setTimeout(() => {
+      this.startPolling();
+    }, 1000);
+  }
+
   async pollLoop() {
+    let conflictWarned = false;
+
     while (this.polling) {
       try {
         const config = getTelegramConfig();
@@ -233,13 +247,22 @@ ${statusEmoji} <b>Status:</b> ${statusText} ${adminNote ? `(${adminNote})` : ''}
         });
 
         if (data && data.ok && Array.isArray(data.result)) {
+          conflictWarned = false;
           for (const update of data.result) {
             this.updateOffset = update.update_id + 1;
             await this.handleUpdate(update);
           }
+        } else if (data && !data.ok && data.error_code === 409) {
+          if (!conflictWarned) {
+            console.log('⚠️ Telegram Bot Notice: Another bot instance is active (e.g. Render Cloud or another window). Local bot waiting 15s before auto-reconnect retry...');
+            conflictWarned = true;
+          }
+          await new Promise(resolve => setTimeout(resolve, 15000));
+          continue;
         }
       } catch (err) {
         console.error('Telegram Poll Loop Error:', err.message);
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
       // Small delay between polls
       await new Promise(resolve => setTimeout(resolve, 1000));
