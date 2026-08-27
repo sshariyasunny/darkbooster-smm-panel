@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BestFollows SMM Panel Dashboard</title>
   <meta name="description" content="BestFollows SMM Panel Dashboard powered by bestfollows.com API v2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap">
   <link rel="stylesheet" href="styles.css">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -14,7 +16,7 @@
   <div class="top-notice-bar">
     <div class="ticker-track">
       <div class="ticker-content">
-        📢 BestFollows SMM প্যানেলে স্বাগতম! 💎 ১ ডলার (1 USD) = ৳127 BDT। 🕊️ বিকাশ পারসোনাল: 01909548699 | 💰 নগদ পারসোনাল: 01909548699 | 💴 রকেট পারসোনাল: 019095486999 | 🌐 Binance UID: 1124018106 🚀 কম মূল্যে ও দ্রুত সোশ্যাল মিডিয়া গ্রোথ সার্ভিস অর্ডার করুন!
+        <span class="live-dot-pulse"></span> 📢 BestFollows SMM প্যানেলে স্বাগতম! 💎 ১ ডলার (1 USD) = ৳127 BDT। 🕊️ বিকাশ পারসোনাল: 01909548699 | 💰 নগদ পারসোনাল: 01909548699 | 💴 রকেট পারসোনাল: 019095486999 | 🌐 Binance UID: 1124018106 🚀 কম মূল্যে ও দ্রুত সোশ্যাল মিডিয়া গ্রোথ সার্ভিস অর্ডার করুন!
       </div>
     </div>
   </div>
@@ -25,7 +27,7 @@
     <!-- Left Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="brand-logo">B</div>
+        <div class="brand-logo"><i class="fa-solid fa-bolt-lightning"></i></div>
         <span class="brand-name">BestFollows</span>
       </div>
 
@@ -36,51 +38,51 @@
           <span class="user-name-text" id="sidebar-user-name">Guest</span>
         </div>
         <button class="logout-icon-btn" id="logout-btn" title="Logout">
-          <i data-lucide="power" style="width: 16px; height: 16px;"></i>
+          <i class="fa-solid fa-power-off"></i>
         </button>
       </div>
 
       <!-- Navigation Links for NORMAL USER -->
       <nav class="sidebar-nav" id="user-sidebar-nav">
         <a class="nav-link active" data-tab="tab-new-order">
-          <i data-lucide="shopping-cart"></i> New Order
+          <span class="nav-icon-badge order-badge"><i class="fa-solid fa-cart-shopping"></i></span> New Order
         </a>
         <a class="nav-link" data-tab="tab-mass-order">
-          <i data-lucide="layers"></i> Mass Order
+          <span class="nav-icon-badge mass-badge"><i class="fa-solid fa-layer-group"></i></span> Mass Order
         </a>
         <a class="nav-link" data-tab="tab-orders">
-          <i data-lucide="file-text"></i> Orders History
+          <span class="nav-icon-badge history-badge"><i class="fa-solid fa-clock-rotate-left"></i></span> Orders History
         </a>
         <a class="nav-link" data-tab="tab-services">
-          <i data-lucide="list"></i> Services Catalog
+          <span class="nav-icon-badge catalog-badge"><i class="fa-solid fa-cubes"></i></span> Services Catalog
         </a>
         <a class="nav-link" data-tab="tab-add-funds">
-          <i data-lucide="credit-card"></i> Add Funds
+          <span class="nav-icon-badge funds-badge"><i class="fa-solid fa-wallet"></i></span> Add Funds
         </a>
         <a class="nav-link" data-tab="tab-dashboard">
-          <i data-lucide="bar-chart-2"></i> Dashboard
+          <span class="nav-icon-badge dash-badge"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
         </a>
       </nav>
 
       <!-- Navigation Links for ADMIN ONLY -->
       <nav class="sidebar-nav" id="admin-sidebar-nav" style="display: none;">
         <a class="nav-link active" data-tab="tab-admin-overview">
-          <i data-lucide="bar-chart-2"></i> Admin Overview
+          <span class="nav-icon-badge dash-badge"><i class="fa-solid fa-chart-line"></i></span> Admin Overview
         </a>
         <a class="nav-link" data-tab="tab-admin-users">
-          <i data-lucide="users"></i> User Management
+          <span class="nav-icon-badge users-badge"><i class="fa-solid fa-users-gear"></i></span> User Management
         </a>
         <a class="nav-link" data-tab="tab-admin-recycle-bin" style="color: #f87171;">
-          <i data-lucide="trash-2"></i> Recycle Bin (রিসাইকেল বিন)
+          <span class="nav-icon-badge trash-badge"><i class="fa-solid fa-trash-can"></i></span> Recycle Bin (রিসাইকেল বিন)
         </a>
         <a class="nav-link" data-tab="tab-admin-deposits">
-          <i data-lucide="credit-card"></i> Deposit Requests
+          <span class="nav-icon-badge deposit-badge"><i class="fa-solid fa-money-bill-transfer"></i></span> Deposit Requests
         </a>
         <a class="nav-link" data-tab="tab-admin-orders">
-          <i data-lucide="shopping-bag"></i> All Users Orders
+          <span class="nav-icon-badge allorders-badge"><i class="fa-solid fa-boxes-stacked"></i></span> All Users Orders
         </a>
         <a class="nav-link" data-tab="tab-services">
-          <i data-lucide="list"></i> Services List
+          <span class="nav-icon-badge catalog-badge"><i class="fa-solid fa-list-check"></i></span> Services List
         </a>
       </nav>
     </aside>
@@ -91,20 +93,20 @@
       <!-- Top Header Navbar -->
       <header class="top-header">
         <button class="toggle-sidebar-btn" id="toggle-sidebar">
-          <i data-lucide="menu"></i>
+          <i class="fa-solid fa-bars"></i>
         </button>
 
         <div class="header-utilities">
           <button class="util-icon-btn" title="Notifications">
-            <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+            <i class="fa-solid fa-bell"></i>
           </button>
 
           <!-- Default BDT / USD Currency Converter Toggle -->
-          <button class="util-icon-btn" id="currency-toggle-btn" title="Toggle Currency (BDT / USD)" style="width: auto; padding: 0 12px; border-radius: 20px; font-weight: 700; font-size: 12px; color: var(--purple-primary);">
-            BDT (৳)
+          <button class="util-icon-btn glow-currency-btn" id="currency-toggle-btn" title="Toggle Currency (BDT / USD)">
+            <i class="fa-solid fa-coins" style="margin-right: 6px;"></i> BDT (৳)
           </button>
 
-          <div class="user-avatar" id="header-user-avatar" style="cursor: pointer; width: 34px; height: 34px;">U</div>
+          <div class="user-avatar glow-avatar" id="header-user-avatar" style="cursor: pointer; width: 36px; height: 36px;">U</div>
         </div>
       </header>
 
@@ -113,32 +115,40 @@
 
         <!-- Top Stat Cards (Shown for Users) -->
         <div class="stat-cards-grid" id="user-top-stat-grid">
-          <div class="stat-card">
-            <div class="stat-icon-wrapper"><i data-lucide="user"></i></div>
+          <div class="stat-card stat-card-user">
+            <div class="stat-icon-wrapper user-stat-badge">
+              <i class="fa-solid fa-user-astronaut"></i>
+            </div>
             <div class="stat-info">
               <span class="stat-title">Username</span>
               <span class="stat-value" id="card-username">Guest</span>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.12); color: var(--success);"><i data-lucide="wallet"></i></div>
+          <div class="stat-card stat-card-balance">
+            <div class="stat-icon-wrapper balance-stat-badge">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
             <div class="stat-info">
               <span class="stat-title">My Balance</span>
-              <span class="stat-value" id="card-balance" style="color: var(--success);">৳0.00 BDT</span>
+              <span class="stat-value" id="card-balance">৳0.00 BDT</span>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);"><i data-lucide="dollar-sign"></i></div>
+          <div class="stat-card stat-card-spending">
+            <div class="stat-icon-wrapper spending-stat-badge">
+              <i class="fa-solid fa-fire-flame-curved"></i>
+            </div>
             <div class="stat-info">
               <span class="stat-title">Spending</span>
               <span class="stat-value" id="card-spending">৳0.00 BDT</span>
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.12); color: var(--cyan-accent);"><i data-lucide="shopping-bag"></i></div>
+          <div class="stat-card stat-card-orders">
+            <div class="stat-icon-wrapper orders-stat-badge">
+              <i class="fa-solid fa-box-archive"></i>
+            </div>
             <div class="stat-info">
               <span class="stat-title">Total Orders</span>
               <span class="stat-value" id="card-total-orders">0</span>
@@ -148,18 +158,42 @@
 
         <!-- Platform Filter Pills Row (Shown for Users) -->
         <div class="platform-pills-row" id="user-platform-pills-row">
-          <button class="platform-pill active" data-platform="ALL">🏠 Everything</button>
-          <button class="platform-pill" data-platform="Instagram">📸 Instagram</button>
-          <button class="platform-pill" data-platform="Facebook">👍 Facebook</button>
-          <button class="platform-pill" data-platform="YouTube">▶️ YouTube</button>
-          <button class="platform-pill" data-platform="Twitter">🐦 Twitter</button>
-          <button class="platform-pill" data-platform="Spotify">🎵 Spotify</button>
-          <button class="platform-pill" data-platform="TikTok">🎵 TikTok</button>
-          <button class="platform-pill" data-platform="LinkedIn">💼 LinkedIn</button>
-          <button class="platform-pill" data-platform="SoundCloud">☁️ SoundCloud</button>
-          <button class="platform-pill" data-platform="Telegram">✈️ Telegram</button>
-          <button class="platform-pill" data-platform="Web Traffic">🌐 Web Traffic</button>
-          <button class="platform-pill" data-platform="Snapchat">👻 Snapchat</button>
+          <button class="platform-pill active" data-platform="ALL">
+            <span class="platform-icon-badge all-badge"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Everything
+          </button>
+          <button class="platform-pill" data-platform="Instagram">
+            <span class="platform-icon-badge instagram-badge"><i class="fa-brands fa-instagram"></i></span> Instagram
+          </button>
+          <button class="platform-pill" data-platform="Facebook">
+            <span class="platform-icon-badge facebook-badge"><i class="fa-brands fa-facebook-f"></i></span> Facebook
+          </button>
+          <button class="platform-pill" data-platform="YouTube">
+            <span class="platform-icon-badge youtube-badge"><i class="fa-brands fa-youtube"></i></span> YouTube
+          </button>
+          <button class="platform-pill" data-platform="TikTok">
+            <span class="platform-icon-badge tiktok-badge"><i class="fa-brands fa-tiktok"></i></span> TikTok
+          </button>
+          <button class="platform-pill" data-platform="Telegram">
+            <span class="platform-icon-badge telegram-badge"><i class="fa-brands fa-telegram"></i></span> Telegram
+          </button>
+          <button class="platform-pill" data-platform="Twitter">
+            <span class="platform-icon-badge twitter-badge"><i class="fa-brands fa-x-twitter"></i></span> Twitter / X
+          </button>
+          <button class="platform-pill" data-platform="Spotify">
+            <span class="platform-icon-badge spotify-badge"><i class="fa-brands fa-spotify"></i></span> Spotify
+          </button>
+          <button class="platform-pill" data-platform="LinkedIn">
+            <span class="platform-icon-badge linkedin-badge"><i class="fa-brands fa-linkedin-in"></i></span> LinkedIn
+          </button>
+          <button class="platform-pill" data-platform="SoundCloud">
+            <span class="platform-icon-badge soundcloud-badge"><i class="fa-brands fa-soundcloud"></i></span> SoundCloud
+          </button>
+          <button class="platform-pill" data-platform="Web Traffic">
+            <span class="platform-icon-badge traffic-badge"><i class="fa-solid fa-globe"></i></span> Web Traffic
+          </button>
+          <button class="platform-pill" data-platform="Snapchat">
+            <span class="platform-icon-badge snapchat-badge"><i class="fa-brands fa-snapchat"></i></span> Snapchat
+          </button>
         </div>
 
         <!-- ================= USER TABS ================= -->

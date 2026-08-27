@@ -294,44 +294,251 @@ body {
   margin-bottom: 20px;
 }
 
+/* ULTRA-PREMIUM REALISTIC GLOWING ICON BADGES */
+.platform-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.platform-icon-badge::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: rotate(45deg);
+  transition: all 0.5s ease;
+}
+
+.platform-pill:hover .platform-icon-badge::before {
+  left: 100%;
+}
+
+.platform-pill:hover .platform-icon-badge {
+  transform: scale(1.2) rotate(4deg);
+}
+
+/* Individual Brand Colors & Neon Glowing Shadows */
+.instagram-badge {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  box-shadow: 0 0 12px rgba(214, 36, 159, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.facebook-badge {
+  background: linear-gradient(135deg, #1877f2, #0052cc);
+  box-shadow: 0 0 12px rgba(24, 119, 242, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.youtube-badge {
+  background: linear-gradient(135deg, #ff0000, #b30000);
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.tiktok-badge {
+  background: linear-gradient(135deg, #0f0f0f, #000000);
+  box-shadow: -2px 2px 10px rgba(0, 242, 234, 0.7), 2px -2px 10px rgba(254, 44, 85, 0.7);
+  border: 1px solid rgba(0, 242, 234, 0.3);
+}
+
+.telegram-badge {
+  background: linear-gradient(135deg, #26a5e4, #0088cc);
+  box-shadow: 0 0 12px rgba(0, 136, 204, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.twitter-badge {
+  background: linear-gradient(135deg, #181818, #050505);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+.spotify-badge {
+  background: linear-gradient(135deg, #1ed760, #1db954);
+  box-shadow: 0 0 12px rgba(30, 215, 96, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.linkedin-badge {
+  background: linear-gradient(135deg, #0a66c2, #004182);
+  box-shadow: 0 0 12px rgba(10, 102, 194, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.snapchat-badge {
+  background: linear-gradient(135deg, #fffc00, #e6e300);
+  color: #000;
+  box-shadow: 0 0 12px rgba(255, 252, 0, 0.7);
+}
+
+.soundcloud-badge {
+  background: linear-gradient(135deg, #ff5500, #e64a00);
+  box-shadow: 0 0 12px rgba(255, 85, 0, 0.7);
+}
+
+.traffic-badge {
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.7);
+}
+
+.all-badge {
+  background: linear-gradient(135deg, #a855f7, #ec4899, #3b82f6);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Nav Link Glowing Icon Badges */
+.nav-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover .nav-icon-badge,
+.nav-link.active .nav-icon-badge {
+  background: linear-gradient(135deg, var(--purple-primary), #d946ef);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+/* Glowing Stat Cards */
 .stat-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(20, 22, 38, 0.95), rgba(15, 16, 29, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
+  padding: 18px 22px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+  pointer-events: none;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 12px 35px rgba(139, 92, 246, 0.25);
+}
+
+.user-stat-badge {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+}
+
+.balance-stat-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+.spending-stat-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+.orders-stat-badge {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
 }
 
 .stat-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(139, 92, 246, 0.12);
-  color: var(--purple-primary);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-title {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.stat-value {
   font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  margin-top: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon-wrapper {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+/* Pulsing Live Dot */
+.live-dot-pulse {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+  margin-right: 6px;
+  animation: pulseGreen 1.5s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Glowing Currency Toggle Button */
+.glow-currency-btn {
+  width: auto !important;
+  padding: 0 14px !important;
+  border-radius: 20px !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(217, 70, 239, 0.15)) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.glow-currency-btn:hover {
+  background: linear-gradient(135deg, var(--purple-primary), #d946ef) !important;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.6) !important;
+  transform: translateY(-2px);
+}
+
+.glow-avatar {
+  border: 2px solid var(--purple-primary);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+  transition: all 0.3s ease;
+}
+
+.glow-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 18px rgba(217, 70, 239, 0.7);
 }
 
 /* Platform Filter Pills Bar */
@@ -349,31 +556,34 @@ body {
 }
 
 .platform-pill {
-  padding: 8px 16px;
-  border-radius: 20px;
-  background: var(--bg-card);
+  padding: 8px 18px;
+  border-radius: 24px;
+  background: rgba(20, 22, 38, 0.8);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .platform-pill:hover {
   border-color: var(--purple-primary);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.25);
 }
 
 .platform-pill.active {
-  background: linear-gradient(135deg, var(--purple-primary), var(--purple-hover));
+  background: linear-gradient(135deg, var(--purple-primary), #d946ef);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
 }
 
 /* Split Workspace (Form + Details) */

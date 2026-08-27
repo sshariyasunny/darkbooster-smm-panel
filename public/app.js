@@ -1026,6 +1026,34 @@ window.rejectDeposit = async function(depositId) {
   }
 };
 
+function getPlatformBadgeHTML(text) {
+  const str = (text || '').toLowerCase();
+  if (str.includes('instagram') || str.includes('ig')) {
+    return `<span class="platform-icon-badge instagram-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-instagram"></i></span>`;
+  } else if (str.includes('facebook') || str.includes('fb')) {
+    return `<span class="platform-icon-badge facebook-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-facebook-f"></i></span>`;
+  } else if (str.includes('youtube') || str.includes('yt')) {
+    return `<span class="platform-icon-badge youtube-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-youtube"></i></span>`;
+  } else if (str.includes('tiktok')) {
+    return `<span class="platform-icon-badge tiktok-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-tiktok"></i></span>`;
+  } else if (str.includes('telegram') || str.includes('tg')) {
+    return `<span class="platform-icon-badge telegram-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-telegram"></i></span>`;
+  } else if (str.includes('twitter') || str.includes('x ')) {
+    return `<span class="platform-icon-badge twitter-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-x-twitter"></i></span>`;
+  } else if (str.includes('spotify')) {
+    return `<span class="platform-icon-badge spotify-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-spotify"></i></span>`;
+  } else if (str.includes('linkedin')) {
+    return `<span class="platform-icon-badge linkedin-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-linkedin-in"></i></span>`;
+  } else if (str.includes('snapchat')) {
+    return `<span class="platform-icon-badge snapchat-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-snapchat"></i></span>`;
+  } else if (str.includes('soundcloud')) {
+    return `<span class="platform-icon-badge soundcloud-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-brands fa-soundcloud"></i></span>`;
+  } else if (str.includes('traffic') || str.includes('web')) {
+    return `<span class="platform-icon-badge traffic-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-solid fa-globe"></i></span>`;
+  }
+  return `<span class="platform-icon-badge default-badge" style="width:20px;height:20px;font-size:10px;margin-right:6px;display:inline-flex;vertical-align:middle;"><i class="fa-solid fa-bolt"></i></span>`;
+}
+
 // Render Services Table
 function renderServicesTable(servicesList) {
   const tableBody = document.getElementById('services-table-body');
@@ -1036,7 +1064,7 @@ function renderServicesTable(servicesList) {
   tableBody.innerHTML = displayList.map(srv => `
     <tr>
       <td><strong style="color: var(--purple-primary); font-family: monospace;">#${srv.service}</strong></td>
-      <td><small style="color: var(--text-muted);">${srv.category || 'General'}</small></td>
+      <td>${getPlatformBadgeHTML(srv.category)} <small style="color: var(--text-muted); font-weight: 600;">${srv.category || 'General'}</small></td>
       <td><strong>${srv.name}</strong></td>
       <td><span style="color: var(--success); font-weight: 700;">${formatPrice(srv.rate)}</span> / 1k</td>
       <td><small>${srv.min} - ${srv.max}</small></td>
