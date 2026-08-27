@@ -1,5 +1,5 @@
 {
-  "name": "smm-panel-website",
+  "name": "darkbooster-smm-panel",
   "version": "1.0.0",
   "description": "Full-stack SMM Panel website powered by bestfollows.com API",
   "main": "server.js",
