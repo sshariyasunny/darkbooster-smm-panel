@@ -617,7 +617,7 @@ async function handleOrderSubmit(e) {
   }
 }
 
-// Fetch Orders History
+// Fetch Orders History (With Realtime API Sync)
 async function fetchOrdersHistory() {
   if (!currentUser) return;
   const tableBody = document.getElementById('orders-table-body');
@@ -642,7 +642,7 @@ async function fetchOrdersHistory() {
           <td><a href="${ord.link.startsWith('http') ? ord.link : '#'}" target="_blank" style="color: var(--cyan-accent); text-decoration: none;">${ord.link}</a></td>
           <td>${ord.quantity}</td>
           <td><span style="color: var(--success); font-weight: 700;">${formatPrice(ord.charge)}</span></td>
-          <td><span class="badge-btn" style="background: rgba(139, 92, 246, 0.15);">${ord.status}</span></td>
+          <td>${getStatusBadgeHTML(ord.status)}</td>
           <td><small style="color: var(--text-muted);">${ord.date}</small></td>
           <td><button class="badge-btn" onclick="checkOrderStatus('${ord.id}')">Check Status</button></td>
         </tr>
@@ -953,6 +953,24 @@ window.deleteDepositHistory = async function(depositId) {
   }
 };
 
+function getStatusBadgeHTML(status) {
+  const st = (status || 'Pending').toLowerCase();
+  if (st === 'completed') {
+    return `<span class="badge-btn" style="background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); font-weight:700;">Completed</span>`;
+  } else if (st === 'processing') {
+    return `<span class="badge-btn" style="background: rgba(6,182,212,0.15); color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); font-weight:700;">Processing</span>`;
+  } else if (st.includes('progress')) {
+    return `<span class="badge-btn" style="background: rgba(139,92,246,0.15); color: #a855f7; border: 1px solid rgba(139,92,246,0.3); font-weight:700;">In Progress</span>`;
+  } else if (st === 'pending') {
+    return `<span class="badge-btn" style="background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); font-weight:700;">Pending</span>`;
+  } else if (st === 'partial') {
+    return `<span class="badge-btn" style="background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); font-weight:700;">Partial</span>`;
+  } else if (st.includes('cancel') || st.includes('refund')) {
+    return `<span class="badge-btn" style="background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); font-weight:700;">${status}</span>`;
+  }
+  return `<span class="badge-btn" style="background: rgba(139,92,246,0.15); color: #a855f7; font-weight:700;">${status}</span>`;
+}
+
 // Fetch All Users Orders for Admin
 window.fetchAdminAllOrders = async function() {
   if (!currentUser || currentUser.role !== 'admin') return;
@@ -960,7 +978,7 @@ window.fetchAdminAllOrders = async function() {
   if (!tableBody) return;
 
   try {
-    const res = await fetch('/api/my-orders/usr_admin');
+    const res = await fetch('/api/admin/orders');
     const orders = await res.json();
 
     if (!orders || orders.length === 0) {
@@ -976,7 +994,7 @@ window.fetchAdminAllOrders = async function() {
         <td><a href="${ord.link.startsWith('http') ? ord.link : '#'}" target="_blank" style="color: var(--cyan-accent); text-decoration: none;">${ord.link}</a></td>
         <td>${ord.quantity}</td>
         <td><span style="color: var(--success); font-weight: 700;">$${ord.charge} USD</span></td>
-        <td><span class="badge-btn">${ord.status}</span></td>
+        <td>${getStatusBadgeHTML(ord.status)}</td>
         <td><small style="color: var(--text-muted);">${ord.date}</small></td>
       </tr>
     `).join('');
@@ -1130,6 +1148,7 @@ window.quickOrderService = function(serviceId, categoryName) {
 
 window.checkOrderStatus = async function(orderId) {
   try {
+    showToast(`Checking realtime status for Order #${orderId}...`, 'info');
     const res = await fetch('/api/status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1137,11 +1156,15 @@ window.checkOrderStatus = async function(orderId) {
     });
     const data = await res.json();
     if (data && data.status) {
-      showToast(`Order #${orderId} Status: ${data.status}`, 'info');
+      const remainsText = data.remains !== undefined ? ` (Remains: ${data.remains})` : '';
+      showToast(`Order #${orderId} Realtime Status: ${data.status}${remainsText}`, 'success');
       fetchOrdersHistory();
+      if (currentUser && currentUser.role === 'admin') fetchAdminAllOrders();
+    } else {
+      showToast(data.error || 'Unable to retrieve status', 'error');
     }
   } catch (err) {
-    showToast('Failed to check status', 'error');
+    showToast('Failed to check status from API', 'error');
   }
 };
 

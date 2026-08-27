@@ -204,7 +204,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   // If Admin login, sync live provider balance first
-  if (username.toLowerCase() === 'admin' || username.toLowerCase() === 'admin@bestfollows.com') {
+  if (username.toLowerCase() === 'admin' || username.toLowerCase() === 'admin@darkbooster.com') {
     await syncAdminLiveBalance();
   }
 
@@ -679,6 +679,67 @@ app.post('/api/mass-order', async (req, res) => {
   }
 });
 
+// Sync active (non-terminal) order statuses with Provider API (bestfollows.com/api/v2)
+async function syncOrdersStatus(ordersToSync) {
+  if (!ordersToSync || !Array.isArray(ordersToSync) || ordersToSync.length === 0) return;
+
+  const terminalStatuses = ['completed', 'canceled', 'cancelled', 'refunded', 'canceled & refunded'];
+  const activeOrders = ordersToSync.filter(o => 
+    !o.status || !terminalStatuses.includes(String(o.status).toLowerCase())
+  );
+
+  if (activeOrders.length === 0) return;
+
+  const orderIds = activeOrders.map(o => o.id).slice(0, 100).join(',');
+
+  try {
+    const statusData = await callSmmApi({ action: 'status', orders: orderIds });
+
+    if (statusData && typeof statusData === 'object' && !statusData.error) {
+      const allOrders = getOrders();
+      let hasChanges = false;
+
+      for (const activeOrd of activeOrders) {
+        const liveInfo = statusData[activeOrd.id] || statusData[String(activeOrd.id)];
+        if (liveInfo && liveInfo.status) {
+          const idx = allOrders.findIndex(o => String(o.id) === String(activeOrd.id));
+          if (idx !== -1) {
+            let newStatus = liveInfo.status;
+            if (newStatus === 'In progress') newStatus = 'In Progress';
+            
+            const oldStatus = allOrders[idx].status;
+            const newRemains = liveInfo.remains !== undefined ? liveInfo.remains : allOrders[idx].remains;
+            const newStartCount = liveInfo.start_count !== undefined ? liveInfo.start_count : allOrders[idx].start_count;
+
+            if (oldStatus !== newStatus || allOrders[idx].remains !== newRemains || allOrders[idx].start_count !== newStartCount) {
+              allOrders[idx].status = newStatus;
+              allOrders[idx].remains = newRemains;
+              allOrders[idx].start_count = newStartCount;
+              hasChanges = true;
+            }
+          }
+        }
+      }
+
+      if (hasChanges) {
+        saveOrders(allOrders);
+      }
+    }
+  } catch (err) {
+    console.error('syncOrdersStatus error:', err.message);
+  }
+}
+
+// Background auto-sync for pending/in-progress orders every 30 seconds
+setInterval(async () => {
+  try {
+    const orders = getOrders();
+    await syncOrdersStatus(orders);
+  } catch (e) {
+    console.error('Background order status sync error:', e.message);
+  }
+}, 30000);
+
 // Order Status Check
 app.post('/api/status', async (req, res) => {
   try {
@@ -688,17 +749,41 @@ app.post('/api/status', async (req, res) => {
     }
 
     const result = await callSmmApi({ action: 'status', order: order_id });
+
+    if (result && result.status) {
+      const orders = getOrders();
+      const idx = orders.findIndex(o => String(o.id) === String(order_id));
+      if (idx !== -1) {
+        let newStatus = result.status;
+        if (newStatus === 'In progress') newStatus = 'In Progress';
+        orders[idx].status = newStatus;
+        if (result.remains !== undefined) orders[idx].remains = result.remains;
+        if (result.start_count !== undefined) orders[idx].start_count = result.start_count;
+        saveOrders(orders);
+      }
+    }
+
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Status check failed', details: error.message });
   }
 });
 
-// Get User Orders
-app.get('/api/my-orders/:userId', (req, res) => {
-  const orders = getOrders();
+// Get User Orders (With Realtime Provider API Sync)
+app.get('/api/my-orders/:userId', async (req, res) => {
+  let orders = getOrders();
+  await syncOrdersStatus(orders);
+  orders = getOrders();
   const userOrders = orders.filter(o => o.user_id === req.params.userId || req.params.userId === 'usr_admin');
   res.json(userOrders);
+});
+
+// Admin: Get All Orders (With Realtime Provider API Sync)
+app.get('/api/admin/orders', async (req, res) => {
+  let orders = getOrders();
+  await syncOrdersStatus(orders);
+  orders = getOrders();
+  res.json(orders);
 });
 
 // Filter missing static assets so they return 404 instead of serving index.html
@@ -716,6 +801,6 @@ app.get('*', (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 BestFollows SMM Panel running on http://localhost:${PORT}`);
+  console.log(`🚀 Dark Booster SMM Panel running on http://localhost:${PORT}`);
   telegramBot.startPolling();
 });

@@ -17,7 +17,7 @@ const defaultAdmin = {
   id: 'usr_admin',
   name: 'Super Admin',
   username: 'admin',
-  email: 'admin@bestfollows.com',
+  email: 'admin@darkbooster.com',
   phone: '01700000000',
   password: 'admin123',
   balance: 0.7937,
