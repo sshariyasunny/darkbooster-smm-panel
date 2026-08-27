@@ -3,6 +3,10 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const db = require('./db');
+const telegramBot = require('./telegramBot');
+
+const { getUsers, saveUsers, getDeposits, saveDeposits, getOrders, saveOrders, defaultAdmin } = db;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,84 +19,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ensure data folder and storage files exist
-const dataDir = path.join(__dirname, 'data');
-const usersFilePath = path.join(dataDir, 'users.json');
-const depositsFilePath = path.join(dataDir, 'deposits.json');
-const ordersFilePath = path.join(dataDir, 'orders.json');
+// Health & Ping route for Render hosting and 24/7 uptime pinging
+app.get(['/health', '/ping'], (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    message: 'Server and Telegram Bot are running 24/7',
+    timestamp: new Date().toISOString()
+  });
+});
 
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Initial Admin User Seed
-const defaultAdmin = {
-  id: 'usr_admin',
-  name: 'Super Admin',
-  username: 'admin',
-  email: 'admin@bestfollows.com',
-  phone: '01700000000',
-  password: 'admin123',
-  balance: 0.7937,
-  spending: 0.0,
-  role: 'admin',
-  is_deleted: false,
-  created_at: new Date().toLocaleString()
-};
-
-if (!fs.existsSync(usersFilePath)) {
-  fs.writeFileSync(usersFilePath, JSON.stringify([defaultAdmin], null, 2), 'utf8');
-} else {
-  const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
-  if (!users.some(u => u.username === 'admin')) {
-    users.unshift(defaultAdmin);
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf8');
-  }
-}
-
-if (!fs.existsSync(depositsFilePath)) {
-  fs.writeFileSync(depositsFilePath, JSON.stringify([], null, 2), 'utf8');
-}
-if (!fs.existsSync(ordersFilePath)) {
-  fs.writeFileSync(ordersFilePath, JSON.stringify([], null, 2), 'utf8');
-}
-
-// Data Helper Functions
-function getUsers() {
-  try {
-    return JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
-  } catch (e) {
-    return [defaultAdmin];
-  }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf8');
-}
-
-function getDeposits() {
-  try {
-    return JSON.parse(fs.readFileSync(depositsFilePath, 'utf8'));
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveDeposits(deposits) {
-  fs.writeFileSync(depositsFilePath, JSON.stringify(deposits, null, 2), 'utf8');
-}
-
-function getOrders() {
-  try {
-    return JSON.parse(fs.readFileSync(ordersFilePath, 'utf8'));
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveOrders(orders) {
-  fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2), 'utf8');
-}
 
 // SMM Provider API Connector (bestfollows.com/api/v2)
 async function callSmmApi(payload) {
@@ -134,6 +69,89 @@ async function syncAdminLiveBalance() {
 }
 
 // ----------------------------------------------------
+// DEPOSIT APPROVAL & REJECTION HELPERS (Shared with Telegram Bot)
+// ----------------------------------------------------
+function approveDeposit(depositId) {
+  const deposits = getDeposits();
+  const depIndex = deposits.findIndex(d => d.id === depositId);
+
+  if (depIndex === -1) {
+    return { success: false, error: 'Deposit request not found' };
+  }
+
+  const deposit = deposits[depIndex];
+  if (deposit.status === 'Approved') {
+    return { success: false, error: 'Deposit request is already approved' };
+  }
+
+  const users = getUsers();
+  const userIndex = users.findIndex(u => u.id === deposit.user_id);
+  if (userIndex !== -1) {
+    users[userIndex].balance += deposit.amount_usd;
+    saveUsers(users);
+  }
+
+  deposits[depIndex].status = 'Approved';
+  saveDeposits(deposits);
+
+  return { success: true, deposit: deposits[depIndex] };
+}
+
+function rejectDeposit(depositId) {
+  const deposits = getDeposits();
+  const depIndex = deposits.findIndex(d => d.id === depositId);
+
+  if (depIndex === -1) {
+    return { success: false, error: 'Deposit request not found' };
+  }
+
+  deposits[depIndex].status = 'Rejected';
+  saveDeposits(deposits);
+
+  return { success: true, deposit: deposits[depIndex] };
+}
+
+// Bind Telegram Bot Action Handlers & Bot Commands
+telegramBot.setHandlers({
+  onApproveDeposit: async (depositId) => {
+    return approveDeposit(depositId);
+  },
+  onRejectDeposit: async (depositId) => {
+    return rejectDeposit(depositId);
+  },
+  getStats: async () => {
+    const users = getUsers().filter(u => !u.is_deleted);
+    const deposits = getDeposits();
+    const approvedDeps = deposits.filter(d => d.status === 'Approved');
+    const pendingDeps = deposits.filter(d => d.status === 'Pending');
+    const orders = getOrders();
+    const liveBal = await syncAdminLiveBalance();
+
+    const totalDepositedUsd = approvedDeps.reduce((sum, d) => sum + (d.amount_usd || 0), 0);
+    const totalDepositedBdt = approvedDeps.reduce((sum, d) => sum + (d.amount_bdt || 0), 0);
+
+    return {
+      totalUsers: users.length,
+      totalDeposits: deposits.length,
+      pendingDeposits: pendingDeps.length,
+      totalDepositedUsd,
+      totalDepositedBdt,
+      totalOrders: orders.length,
+      providerBalance: liveBal
+    };
+  },
+  getPendingDeposits: async () => {
+    return getDeposits().filter(d => d.status === 'Pending');
+  },
+  getUsers: async () => {
+    return getUsers().filter(u => !u.is_deleted).map(({ password, ...u }) => u);
+  },
+  getBalance: async () => {
+    return await callSmmApi({ action: 'balance' });
+  }
+});
+
+// ----------------------------------------------------
 // AUTHENTICATION API ROUTES
 // ----------------------------------------------------
 
@@ -168,6 +186,11 @@ app.post('/api/auth/register', (req, res) => {
 
   users.push(newUser);
   saveUsers(users);
+
+  // Send real-time Telegram notification to Admin
+  telegramBot.sendNewUserNotification(newUser).catch(err => {
+    console.error('Telegram user alert error:', err.message);
+  });
 
   const { password: _, ...userSafe } = newUser;
   res.json({ success: true, user: userSafe });
@@ -252,6 +275,20 @@ app.post('/api/deposit/request', (req, res) => {
   const deposits = getDeposits();
   deposits.unshift(newDeposit);
   saveDeposits(deposits);
+
+  // Send real-time Telegram alert with inline Approve/Reject buttons
+  telegramBot.sendDepositNotification(newDeposit).then(msgId => {
+    if (msgId) {
+      const deps = getDeposits();
+      const depIndex = deps.findIndex(d => d.id === newDeposit.id);
+      if (depIndex !== -1) {
+        deps[depIndex].telegram_msg_id = msgId;
+        saveDeposits(deps);
+      }
+    }
+  }).catch(err => {
+    console.error('Telegram deposit alert error:', err.message);
+  });
 
   res.json({ success: true, deposit: newDeposit });
 });
@@ -365,47 +402,37 @@ app.get('/api/admin/deposits', (req, res) => {
 });
 
 // Admin: Approve Deposit Request
-app.post('/api/admin/deposits/approve', (req, res) => {
+app.post('/api/admin/deposits/approve', async (req, res) => {
   const { depositId } = req.body;
-  const deposits = getDeposits();
-  const depIndex = deposits.findIndex(d => d.id === depositId);
+  const result = approveDeposit(depositId);
 
-  if (depIndex === -1) {
-    return res.status(404).json({ error: 'Deposit request not found' });
+  if (!result.success) {
+    return res.status(400).json({ error: result.error });
   }
 
-  const deposit = deposits[depIndex];
-  if (deposit.status === 'Approved') {
-    return res.status(400).json({ error: 'Deposit request is already approved' });
+  // Update Telegram message status if sent
+  if (result.deposit.telegram_msg_id) {
+    await telegramBot.updateDepositMessageStatus(null, result.deposit.telegram_msg_id, result.deposit, 'Approved', 'Via Web Admin');
   }
 
-  const users = getUsers();
-  const userIndex = users.findIndex(u => u.id === deposit.user_id);
-  if (userIndex !== -1) {
-    users[userIndex].balance += deposit.amount_usd;
-    saveUsers(users);
-  }
-
-  deposits[depIndex].status = 'Approved';
-  saveDeposits(deposits);
-
-  res.json({ success: true, deposit: deposits[depIndex] });
+  res.json({ success: true, deposit: result.deposit });
 });
 
 // Admin: Reject Deposit Request
-app.post('/api/admin/deposits/reject', (req, res) => {
+app.post('/api/admin/deposits/reject', async (req, res) => {
   const { depositId } = req.body;
-  const deposits = getDeposits();
-  const depIndex = deposits.findIndex(d => d.id === depositId);
+  const result = rejectDeposit(depositId);
 
-  if (depIndex === -1) {
-    return res.status(404).json({ error: 'Deposit request not found' });
+  if (!result.success) {
+    return res.status(400).json({ error: result.error });
   }
 
-  deposits[depIndex].status = 'Rejected';
-  saveDeposits(deposits);
+  // Update Telegram message status if sent
+  if (result.deposit.telegram_msg_id) {
+    await telegramBot.updateDepositMessageStatus(null, result.deposit.telegram_msg_id, result.deposit, 'Rejected', 'Via Web Admin');
+  }
 
-  res.json({ success: true, deposit: deposits[depIndex] });
+  res.json({ success: true, deposit: result.deposit });
 });
 
 // Admin: Delete Deposit History Record
@@ -690,4 +717,5 @@ app.get('*', (req, res) => {
 // Start Server
 app.listen(PORT, () => {
   console.log(`🚀 BestFollows SMM Panel running on http://localhost:${PORT}`);
+  telegramBot.startPolling();
 });
