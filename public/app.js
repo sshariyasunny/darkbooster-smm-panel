@@ -276,10 +276,14 @@ async function fetchLatestUserData() {
   try {
     const res = await fetch(`/api/auth/me/${currentUser.id}`);
     const updatedUser = await res.json();
-    if (updatedUser && updatedUser.id) {
+    if (res.ok && updatedUser && updatedUser.id) {
       currentUser = updatedUser;
       sessionStorage.setItem('smm_current_user', JSON.stringify(currentUser));
       updateUserBalanceDisplay();
+    } else {
+      // Account was deleted, suspended, or not found! Force immediate logout!
+      showToast('Account suspended or deleted. Logging out...', 'error');
+      handleLogout();
     }
   } catch (err) {
     console.error(err);
@@ -883,6 +887,7 @@ window.permanentlyDeleteUser = async function(userId) {
     const data = await res.json();
     if (data.success) {
       showToast('User account PERMANENTLY deleted!', 'warning');
+      fetchAdminUsers();
       fetchAdminRecycleBinUsers();
     } else {
       showToast(data.error || 'Failed to permanently delete user', 'error');

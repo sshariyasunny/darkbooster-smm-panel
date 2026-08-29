@@ -56,7 +56,7 @@ async function syncAdminLiveBalance() {
       const liveBal = parseFloat(data.balance);
       const users = getUsers();
       const adminIndex = users.findIndex(u => u.role === 'admin' || u.username === 'admin');
-      if (adminIndex !== -1) {
+      if (adminIndex !== -1 && users[adminIndex].balance !== liveBal) {
         users[adminIndex].balance = liveBal;
         saveUsers(users);
       }
