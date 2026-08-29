@@ -938,13 +938,59 @@ app.use((req, res, next) => {
   next();
 });
 
-// SPA FALLBACK ROUTE
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Admin Manual Order Status Sync
+app.post('/api/admin/orders/sync-status', async (req, res) => {
+  const result = await syncOrdersStatusFromProvider();
+  res.json({ success: true, message: 'Order statuses synced with SMM Provider API', updatedCount: result ? result.updatedCount : 0 });
 });
 
-// Start Server
+// Background Auto-Sync Orders Status from Provider API
+async function syncOrdersStatusFromProvider() {
+  try {
+    const orders = getOrders();
+    const activeOrders = orders.filter(o => o.id && (o.status === 'Pending' || o.status === 'In progress' || o.status === 'Processing'));
+    if (activeOrders.length === 0) return { updatedCount: 0 };
+
+    const orderIds = activeOrders.slice(0, 100).map(o => o.id).join(',');
+    const statusData = await callSmmApi({ action: 'status', orders: orderIds });
+
+    let updatedCount = 0;
+    if (statusData && typeof statusData === 'object') {
+      const allOrders = getOrders();
+
+      for (const orderId in statusData) {
+        const info = statusData[orderId];
+        if (info && info.status) {
+          const idx = allOrders.findIndex(o => String(o.id) === String(orderId));
+          if (idx !== -1) {
+            const formattedStatus = info.status.charAt(0).toUpperCase() + info.status.slice(1);
+            if (allOrders[idx].status !== formattedStatus || (info.remains !== undefined && allOrders[idx].remains !== info.remains)) {
+              allOrders[idx].status = formattedStatus;
+              if (info.remains !== undefined) allOrders[idx].remains = info.remains;
+              updatedCount++;
+            }
+          }
+        }
+      }
+
+      if (updatedCount > 0) {
+        saveOrders(allOrders);
+        console.log(`🔄 Synced ${updatedCount} SMM provider order statuses`);
+      }
+    }
+    return { updatedCount };
+  } catch (err) {
+    console.error('syncOrdersStatusFromProvider error:', err.message);
+    return { updatedCount: 0 };
+  }
+}
+
+// Start Server & Background Cron
 app.listen(PORT, () => {
   console.log(`🚀 Dark Booster SMM Panel running on http://localhost:${PORT}`);
   telegramBot.startPolling();
+
+  // Run Order status auto-sync every 3 minutes
+  setInterval(syncOrdersStatusFromProvider, 3 * 60 * 1000);
 });
+
