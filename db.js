@@ -82,14 +82,17 @@ const OrderDoc = mongoose.models.Order || mongoose.model('Order', orderSchema);
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (MONGODB_URI) {
-  mongoose.connect(MONGODB_URI)
+  mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    tlsAllowInvalidCertificates: true
+  })
     .then(async () => {
       console.log('✅ Connected to MongoDB Atlas Cloud Database!');
       isMongoConnected = true;
       await syncFromMongoDB();
     })
     .catch(err => {
-      console.error('⚠️ MongoDB Atlas connection notice:', err.message);
+      console.log('⚠️ MongoDB Atlas notice (falling back to JSON storage):', err.message);
     });
 }
 
