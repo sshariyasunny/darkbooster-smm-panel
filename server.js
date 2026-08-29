@@ -1027,5 +1027,14 @@ app.listen(PORT, () => {
 
   // Run Order status auto-sync every 3 minutes
   setInterval(syncOrdersStatusFromProvider, 3 * 60 * 1000);
+
+  // 24/7 Uptime Self-Ping Keep-Alive (Prevents Render Free Tier Sleep Mode)
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  setInterval(async () => {
+    try {
+      await fetch(`${RENDER_URL}/health`);
+      console.log('⚡ [24/7 Keep-Alive Ping] Active server heartbeat');
+    } catch (e) {}
+  }, 4 * 60 * 1000); // Self-ping every 4 minutes
 });
 
