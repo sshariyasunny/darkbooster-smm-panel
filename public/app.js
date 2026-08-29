@@ -470,11 +470,8 @@ function onServiceSelect(serviceId) {
   if (qtyInput) {
     const minQty = parseInt(selectedServiceObj.min) || 1000;
     const maxQty = parseInt(selectedServiceObj.max) || 10000;
-    const currentVal = parseInt(qtyInput.value) || 0;
 
-    if (currentVal <= 0 || currentVal < minQty) {
-      qtyInput.value = minQty;
-    }
+    qtyInput.value = ''; // Default empty quantity
     document.getElementById('quantity-range-hint').textContent = `Min ${minQty.toLocaleString()} - Max ${maxQty.toLocaleString()}`;
   }
 
