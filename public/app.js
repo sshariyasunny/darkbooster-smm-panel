@@ -1027,14 +1027,34 @@ window.fetchAdminAllOrders = async function() {
         <td>${getStatusBadgeHTML(ord.status)}${ord.is_manual ? ' <small style="color:var(--cyan-accent); font-size:10px;">[Manual]</small>' : ''}</td>
         <td><small style="color: var(--text-muted);">${ord.date}</small></td>
         <td>
-          <button class="badge-btn" style="background: var(--purple-primary); color: #fff;" onclick="openAdminOrderStatusModal('${ord.id}', '${(ord.status || 'Pending').replace(/'/g, "\\'")}', '${ord.remains || 0}', '@${ord.username || 'User'}', '$${ord.charge}')">
+          <button class="badge-btn" style="background: var(--purple-primary); color: #fff; margin-right: 4px;" onclick="openAdminOrderStatusModal('${ord.id}', '${(ord.status || 'Pending').replace(/'/g, "\\'")}', '${ord.remains || 0}', '@${ord.username || 'User'}', '$${ord.charge}')">
             Edit Status
+          </button>
+          <button class="badge-btn" style="background: rgba(239,68,68,0.2); color: #f87171; border-color: rgba(239,68,68,0.4);" onclick="deleteAdminOrder('${ord.id}')">
+            Delete
           </button>
         </td>
       </tr>
     `).join('');
   } catch (err) {
     console.error(err);
+  }
+};
+
+// Delete Order History Record for Admin
+window.deleteAdminOrder = async function(orderId) {
+  if (!confirm(`Are you sure you want to PERMANENTLY delete Order #${orderId}?`)) return;
+  try {
+    const res = await fetch(`/api/admin/orders/${orderId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Order #${orderId} permanently deleted!`, 'info');
+      fetchAdminAllOrders();
+    } else {
+      showToast(data.error || 'Failed to delete order', 'error');
+    }
+  } catch (err) {
+    showToast('Error deleting order record', 'error');
   }
 };
 
@@ -1101,10 +1121,30 @@ window.submitAdminOrderStatusEdit = async function() {
 };
 
 // Admin Balance Modal Controls
-window.openAdminBalanceModal = function(userId, username, currentBalance) {
+window.openAdminBalanceModal = function(userId, username, currentBalanceUsd) {
   document.getElementById('edit-user-id').value = userId;
-  document.getElementById('edit-user-username').value = username;
-  document.getElementById('edit-user-new-balance').value = currentBalance;
+  const currentUsdInput = document.getElementById('edit-user-current-usd');
+  if (currentUsdInput) currentUsdInput.value = parseFloat(currentBalanceUsd) || 0;
+
+  document.getElementById('edit-user-username').value = `@${username}`;
+  
+  const modeSelect = document.getElementById('edit-balance-mode');
+  if (modeSelect) modeSelect.value = 'set';
+
+  const currencySelect = document.getElementById('edit-balance-currency');
+  if (currencySelect) currencySelect.value = (currentCurrency === 'BDT') ? 'BDT' : 'USD';
+
+  const inputEl = document.getElementById('edit-user-new-balance');
+  if (inputEl) {
+    if (currentCurrency === 'BDT') {
+      const bdtVal = (parseFloat(currentBalanceUsd) || 0) * BDT_CONVERSION_RATE;
+      inputEl.value = bdtVal.toFixed(2);
+    } else {
+      inputEl.value = (parseFloat(currentBalanceUsd) || 0).toFixed(4);
+    }
+  }
+
+  updateBalancePreview();
   document.getElementById('admin-balance-modal').style.display = 'flex';
 };
 
@@ -1112,27 +1152,62 @@ window.closeAdminBalanceModal = function() {
   document.getElementById('admin-balance-modal').style.display = 'none';
 };
 
+window.updateBalancePreview = function() {
+  const currentUsd = parseFloat(document.getElementById('edit-user-current-usd')?.value) || 0;
+  const mode = document.getElementById('edit-balance-mode')?.value || 'set';
+  const currency = document.getElementById('edit-balance-currency')?.value || 'BDT';
+  const amountInput = parseFloat(document.getElementById('edit-user-new-balance')?.value) || 0;
+
+  let inputInUsd = (currency === 'BDT') ? (amountInput / BDT_CONVERSION_RATE) : amountInput;
+  let finalUsd = 0;
+
+  if (mode === 'add') {
+    finalUsd = currentUsd + inputInUsd;
+  } else if (mode === 'subtract') {
+    finalUsd = Math.max(0, currentUsd - inputInUsd);
+  } else {
+    finalUsd = Math.max(0, inputInUsd);
+  }
+
+  const finalBdt = finalUsd * BDT_CONVERSION_RATE;
+
+  const usdEl = document.getElementById('preview-usd-result');
+  const bdtEl = document.getElementById('preview-bdt-result');
+  if (usdEl) usdEl.textContent = `$${finalUsd.toFixed(4)} USD`;
+  if (bdtEl) bdtEl.textContent = `৳${finalBdt.toFixed(2)} BDT`;
+};
+
 window.submitAdminBalanceEdit = async function() {
   const userId = document.getElementById('edit-user-id').value;
-  const newBalance = document.getElementById('edit-user-new-balance').value;
+  const amount = document.getElementById('edit-user-new-balance').value;
+  const mode = document.getElementById('edit-balance-mode').value;
+  const currency = document.getElementById('edit-balance-currency').value;
+
+  if (!userId || amount === '' || isNaN(parseFloat(amount))) {
+    showToast('সঠিক পরিমাণ (Amount) প্রদান করুন', 'error');
+    return;
+  }
 
   try {
     const res = await fetch('/api/admin/users/update-balance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, newBalance })
+      body: JSON.stringify({ userId, amount, mode, currency })
     });
     const data = await res.json();
 
     if (data.success) {
-      showToast('User balance updated successfully!', 'success');
+      showToast('ইউজারের ব্যালেন্স সফলভাবে আপডেট করা হয়েছে!', 'success');
       closeAdminBalanceModal();
       fetchAdminUsers();
+      if (currentUser && currentUser.id === userId) {
+        fetchLatestUserData();
+      }
     } else {
-      showToast(data.error || 'Failed to update balance', 'error');
+      showToast(data.error || 'ব্যালেন্স আপডেট করতে ব্যর্থ হয়েছে', 'error');
     }
   } catch (err) {
-    showToast('Error updating balance', 'error');
+    showToast('Server error while updating balance', 'error');
   }
 };
 

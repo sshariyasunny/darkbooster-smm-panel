@@ -6,7 +6,7 @@ require('dotenv').config();
 const db = require('./db');
 const telegramBot = require('./telegramBot');
 
-const { getUsers, saveUsers, getDeposits, saveDeposits, getOrders, saveOrders, defaultAdmin } = db;
+const { getUsers, saveUsers, getDeposits, saveDeposits, getOrders, saveOrders, deleteUserFromMongoDB, deleteDepositFromMongoDB, deleteOrderFromMongoDB, defaultAdmin } = db;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -321,7 +321,7 @@ app.get('/api/admin/recycle-bin', (req, res) => {
 
 // Admin: Edit User Balance
 app.post('/api/admin/users/update-balance', (req, res) => {
-  const { userId, newBalance, action, amount } = req.body;
+  const { userId, newBalance, action, amount, mode, currency } = req.body;
   const users = getUsers();
   const userIndex = users.findIndex(u => u.id === userId);
 
@@ -329,17 +329,34 @@ app.post('/api/admin/users/update-balance', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  if (newBalance !== undefined) {
-    users[userIndex].balance = parseFloat(newBalance);
-  } else if (action === 'add' && amount) {
-    users[userIndex].balance += parseFloat(amount);
-  } else if (action === 'subtract' && amount) {
-    users[userIndex].balance = Math.max(0, users[userIndex].balance - parseFloat(amount));
+  const exchangeRate = BDT_EXCHANGE_RATE || 127.0;
+
+  let valInUsd = 0;
+  if (amount !== undefined && amount !== null && amount !== '' && !isNaN(parseFloat(amount))) {
+    const numAmt = parseFloat(amount);
+    valInUsd = (currency === 'BDT') ? (numAmt / exchangeRate) : numAmt;
+  } else if (newBalance !== undefined && newBalance !== null && newBalance !== '' && !isNaN(parseFloat(newBalance))) {
+    const numBal = parseFloat(newBalance);
+    valInUsd = (currency === 'BDT') ? (numBal / exchangeRate) : numBal;
   }
+
+  const currentBal = parseFloat(users[userIndex].balance) || 0;
+  const actMode = mode || action || 'set';
+
+  if (actMode === 'add') {
+    users[userIndex].balance = Math.max(0, currentBal + valInUsd);
+  } else if (actMode === 'subtract') {
+    users[userIndex].balance = Math.max(0, currentBal - valInUsd);
+  } else {
+    // 'set'
+    users[userIndex].balance = Math.max(0, valInUsd);
+  }
+
+  users[userIndex].balance = parseFloat(users[userIndex].balance.toFixed(4));
 
   saveUsers(users);
   const { password: _, ...userSafe } = users[userIndex];
-  res.json({ success: true, user: userSafe });
+  res.json({ success: true, user: userSafe, newBalanceUsd: users[userIndex].balance });
 });
 
 // Admin: Soft Delete User
@@ -391,6 +408,7 @@ app.delete('/api/admin/users/:userId/permanent', (req, res) => {
 
   users = users.filter(u => u.id !== req.params.userId);
   saveUsers(users);
+  deleteUserFromMongoDB(req.params.userId);
 
   res.json({ success: true, message: 'User account permanently deleted' });
 });
@@ -446,6 +464,7 @@ app.delete('/api/admin/deposits/:depositId', (req, res) => {
 
   deposits = deposits.filter(d => d.id !== req.params.depositId);
   saveDeposits(deposits);
+  deleteDepositFromMongoDB(req.params.depositId);
 
   res.json({ success: true, message: 'Deposit history record deleted permanently' });
 });
@@ -828,6 +847,22 @@ app.post('/api/admin/orders/update-status', (req, res) => {
     message: `Order #${orderId} status updated to '${newStatus}'${refundMessage}`,
     order
   });
+});
+
+// Admin: Delete Order History Record
+app.delete('/api/admin/orders/:orderId', (req, res) => {
+  let orders = getOrders();
+  const orderExists = orders.some(o => String(o.id) === String(req.params.orderId));
+
+  if (!orderExists) {
+    return res.status(400).json({ error: 'Order record not found' });
+  }
+
+  orders = orders.filter(o => String(o.id) !== String(req.params.orderId));
+  saveOrders(orders);
+  deleteOrderFromMongoDB(req.params.orderId);
+
+  res.json({ success: true, message: 'Order record deleted permanently' });
 });
 
 // ----------------------------------------------------

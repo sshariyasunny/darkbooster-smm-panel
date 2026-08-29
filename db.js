@@ -128,6 +128,16 @@ async function syncUsersToMongoDB(users) {
   }
 }
 
+async function deleteUserFromMongoDB(userId) {
+  if (!isMongoConnected || !userId) return;
+  try {
+    await UserDoc.deleteOne({ id: userId });
+    console.log(`🗑️ Deleted user ${userId} from MongoDB Cloud`);
+  } catch (err) {
+    console.error('deleteUserFromMongoDB error:', err.message);
+  }
+}
+
 async function syncDepositsToMongoDB(deposits) {
   if (!isMongoConnected || !Array.isArray(deposits)) return;
   try {
@@ -139,6 +149,16 @@ async function syncDepositsToMongoDB(deposits) {
   }
 }
 
+async function deleteDepositFromMongoDB(depositId) {
+  if (!isMongoConnected || !depositId) return;
+  try {
+    await DepositDoc.deleteOne({ id: depositId });
+    console.log(`🗑️ Deleted deposit ${depositId} from MongoDB Cloud`);
+  } catch (err) {
+    console.error('deleteDepositFromMongoDB error:', err.message);
+  }
+}
+
 async function syncOrdersToMongoDB(orders) {
   if (!isMongoConnected || !Array.isArray(orders)) return;
   try {
@@ -147,6 +167,16 @@ async function syncOrdersToMongoDB(orders) {
     }
   } catch (err) {
     console.error('syncOrdersToMongoDB error:', err.message);
+  }
+}
+
+async function deleteOrderFromMongoDB(orderId) {
+  if (!isMongoConnected || !orderId) return;
+  try {
+    await OrderDoc.deleteOne({ id: String(orderId) });
+    console.log(`🗑️ Deleted order ${orderId} from MongoDB Cloud`);
+  } catch (err) {
+    console.error('deleteOrderFromMongoDB error:', err.message);
   }
 }
 
@@ -239,6 +269,9 @@ const dbExports = {
   saveOrders,
   getTelegramConfig,
   saveTelegramConfig,
+  deleteUserFromMongoDB,
+  deleteDepositFromMongoDB,
+  deleteOrderFromMongoDB,
   defaultAdmin
 };
 
@@ -293,9 +326,12 @@ function saveOrders(orders, skipSync = false) {
 }
 
 function getTelegramConfig() {
+  const envToken = process.env.TELEGRAM_BOT_TOKEN;
+  const envAdmin = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
   let config = {
-    bot_token: process.env.TELEGRAM_BOT_TOKEN || '',
-    admin_chat_id: process.env.TELEGRAM_ADMIN_CHAT_ID || ''
+    bot_token: (envToken && envToken.trim() !== '' && envToken !== 'none') ? envToken : '',
+    admin_chat_id: (envAdmin && envAdmin.trim() !== '' && envAdmin !== 'none') ? envAdmin : ''
   };
 
   const fileData = safeReadJson(telegramConfigFilePath, {});

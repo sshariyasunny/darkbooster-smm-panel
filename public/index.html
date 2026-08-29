@@ -780,19 +780,52 @@
 
   <!-- ADMIN EDIT USER BALANCE MODAL -->
   <div id="admin-balance-modal" style="position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; padding: 20px;">
-    <div class="dark-card" style="width: 100%; max-width: 400px; padding: 24px;">
-      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Customize User Balance</h3>
+    <div class="dark-card" style="width: 100%; max-width: 440px; padding: 24px; border-color: var(--purple-primary);">
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-wallet" style="color: var(--purple-primary);"></i> ইউজার ব্যালেন্স নিয়ন্ত্রণ (User Balance Control)
+      </h3>
       <input type="hidden" id="edit-user-id">
-      <div class="field-group">
-        <label class="field-label">Target User</label>
-        <input type="text" id="edit-user-username" class="input-box" readonly>
+      <input type="hidden" id="edit-user-current-usd" value="0">
+      
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label">Target User (টার্গেট ইউজার)</label>
+        <input type="text" id="edit-user-username" class="input-box" readonly style="font-weight: 700; color: var(--purple-primary);">
       </div>
-      <div class="field-group">
-        <label class="field-label">Set Exact New Balance ($ USD)</label>
-        <input type="number" step="0.01" id="edit-user-new-balance" class="input-box" placeholder="10.00" required>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div class="field-group" style="margin-bottom: 0;">
+          <label class="field-label">Action Mode (অ্যাকশন)</label>
+          <select id="edit-balance-mode" class="input-box" onchange="updateBalancePreview()">
+            <option value="set">Set Exact (নির্দিষ্ট মান)</option>
+            <option value="add">Add (+ যোগ করুন)</option>
+            <option value="subtract">Subtract (- বিয়োগ করুন)</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom: 0;">
+          <label class="field-label">Currency (মুদ্রা)</label>
+          <select id="edit-balance-currency" class="input-box" onchange="updateBalancePreview()">
+            <option value="BDT">BDT (৳ টাকা)</option>
+            <option value="USD">USD ($ ডলার)</option>
+          </select>
+        </div>
       </div>
-      <div style="display: flex; gap: 12px; margin-top: 20px;">
-        <button class="btn-submit-purple" onclick="submitAdminBalanceEdit()" style="flex: 1;">Save Balance</button>
+
+      <div class="field-group" style="margin-bottom: 14px;">
+        <label class="field-label" id="edit-balance-amount-label">পরিমাণ (Amount)</label>
+        <input type="number" step="any" id="edit-user-new-balance" class="input-box" placeholder="0.00" oninput="updateBalancePreview()" required>
+      </div>
+
+      <!-- Realtime Conversion Preview Box -->
+      <div id="balance-preview-box" style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #fff;">
+        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">নতুন ব্যালেন্স প্রিভিউ (New Balance Result):</div>
+        <div id="preview-usd-result" style="font-weight: 700; color: var(--success);">$0.0000 USD</div>
+        <div id="preview-bdt-result" style="font-size: 12px; color: #38bdf8;">৳0.00 BDT</div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-submit-purple" onclick="submitAdminBalanceEdit()" style="flex: 1; padding: 12px; font-weight: 700;">
+          <i class="fa-solid fa-floppy-disk"></i> সেভ করুন (Save Balance)
+        </button>
         <button class="badge-btn" onclick="closeAdminBalanceModal()" style="padding: 10px 16px; background: rgba(255,255,255,0.1); color: #fff;">Cancel</button>
       </div>
     </div>
