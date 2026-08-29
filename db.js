@@ -279,11 +279,17 @@ setTimeout(() => {
   googleSheets.autoRecoverIfEmpty(dbExports).catch(() => {});
 }, 1000);
 
+let globalUsersCache = null;
+let globalDepositsCache = null;
+let globalOrdersCache = null;
+
 function getUsers() {
+  if (globalUsersCache) return globalUsersCache;
   const users = safeReadJson(usersFilePath, [defaultAdmin]);
   if (!users.some(u => u.username === 'admin')) {
     users.unshift(defaultAdmin);
   }
+  globalUsersCache = users;
   return users;
 }
 
@@ -292,6 +298,7 @@ function saveUsers(users, skipSync = false) {
   if (!users.some(u => u.username === 'admin')) {
     users.unshift(defaultAdmin);
   }
+  globalUsersCache = users;
   safeWriteJson(usersFilePath, users);
   syncUsersToMongoDB(users).catch(() => {});
   if (!skipSync) {
@@ -300,11 +307,15 @@ function saveUsers(users, skipSync = false) {
 }
 
 function getDeposits() {
-  return safeReadJson(depositsFilePath, []);
+  if (globalDepositsCache) return globalDepositsCache;
+  const deposits = safeReadJson(depositsFilePath, []);
+  globalDepositsCache = deposits;
+  return deposits;
 }
 
 function saveDeposits(deposits, skipSync = false) {
   if (!Array.isArray(deposits)) return;
+  globalDepositsCache = deposits;
   safeWriteJson(depositsFilePath, deposits);
   syncDepositsToMongoDB(deposits).catch(() => {});
   if (!skipSync) {
@@ -313,11 +324,15 @@ function saveDeposits(deposits, skipSync = false) {
 }
 
 function getOrders() {
-  return safeReadJson(ordersFilePath, []);
+  if (globalOrdersCache) return globalOrdersCache;
+  const orders = safeReadJson(ordersFilePath, []);
+  globalOrdersCache = orders;
+  return orders;
 }
 
 function saveOrders(orders, skipSync = false) {
   if (!Array.isArray(orders)) return;
+  globalOrdersCache = orders;
   safeWriteJson(ordersFilePath, orders);
   syncOrdersToMongoDB(orders).catch(() => {});
   if (!skipSync) {

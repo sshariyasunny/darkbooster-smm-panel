@@ -19,23 +19,10 @@
     "email": "sahareisunny5934@gmail.com",
     "phone": "01909548699",
     "password": "1122mmb",
-    "balance": 0,
+    "balance": 0.1575,
     "spending": 0,
     "role": "user",
     "is_deleted": false,
     "created_at": "8/27/2026, 10:02:33 AM"
-  },
-  {
-    "id": "usr_billah",
-    "name": "Billah",
-    "username": "billah",
-    "email": "billah@darkbooster.com",
-    "phone": "01900000000",
-    "password": "user123",
-    "balance": 0,
-    "spending": 0.0333,
-    "role": "user",
-    "is_deleted": false,
-    "created_at": "8/27/2026, 12:00:00 PM"
   }
 ]
